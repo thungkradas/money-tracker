@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Budget</title>
+<title>🩷 รายรับ-รายจ่าย</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ── TOKENS ─────────────────────────────── */
@@ -382,6 +382,70 @@ textarea{resize:vertical;min-height:52px}
 }
 .mob-menu-btn{display:none;width:32px;height:32px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--sur);color:var(--txt2);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0}
 .mob-menu-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
+/* ── CALENDAR PICKER ─────────────────────── */
+.cal-wrap{position:relative}
+.cal-input{
+  display:flex;align-items:center;gap:8px;
+  background:var(--sur2);border:1px solid var(--brd);border-radius:var(--rs);
+  color:var(--txt);font-family:'Prompt',sans-serif;font-size:.82rem;
+  padding:8px 11px;cursor:pointer;transition:border-color .18s;
+  user-select:none;
+}
+.cal-input:hover{border-color:var(--ac1)}
+.cal-input.has-date{color:var(--txt)}
+.cal-popup{
+  position:absolute;top:calc(100% + 6px);left:0;z-index:500;
+  background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);
+  padding:14px;min-width:240px;box-shadow:var(--sh);
+}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-nav{
+  background:none;border:none;color:var(--txt2);cursor:pointer;
+  font-size:1rem;padding:2px 8px;border-radius:5px;transition:all .18s;
+}
+.cal-nav:hover{background:var(--sur2);color:var(--txt)}
+.cal-month-lbl{font-size:.82rem;font-weight:600;color:var(--txt)}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;margin-bottom:4px}
+.cal-dow span{font-size:.6rem;font-weight:600;color:var(--txt2);padding:3px 0}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-day{
+  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;border-radius:6px;cursor:pointer;border:none;background:none;
+  color:var(--txt2);font-family:'Prompt',sans-serif;transition:all .15s;
+}
+.cal-day:hover:not(.empty):not(.selected){background:var(--sur2);color:var(--txt)}
+.cal-day.today{color:var(--ac1);font-weight:600}
+.cal-day.selected{background:var(--ac1);color:#0c0e16;font-weight:700}
+.cal-day.other-month{opacity:.3}
+.cal-day.empty{cursor:default}
+/* ── PROFIT TABLE ────────────────────────── */
+.pt-row{transition:background .15s}
+.pt-row:hover{background:var(--sur2)}
+.pt-row.disabled{opacity:.45}
+.pt-input{
+  background:transparent;border:none;border-bottom:1px solid transparent;
+  color:var(--txt);font-family:inherit;font-size:.78rem;
+  padding:3px 4px;outline:none;transition:border-color .15s;
+  width:100%;
+}
+.pt-input:focus{border-bottom-color:var(--ac1);background:var(--sur2);border-radius:4px 4px 0 0}
+.pt-input.num{text-align:right}
+.pt-profit-pos{color:#4ecb8d;font-weight:600}
+.pt-profit-neg{color:var(--ac2);font-weight:600}
+.pt-toggle{
+  width:34px;height:18px;border-radius:99px;border:none;cursor:pointer;
+  background:var(--brd);position:relative;transition:background .2s;flex-shrink:0;
+}
+.pt-toggle::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s}
+.pt-toggle.on{background:var(--ac1)}
+.pt-toggle.on::after{transform:translateX(16px)}
+.pt-del{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:.75rem;padding:2px 6px;transition:color .15s;border-radius:4px}
+.pt-del:hover{color:var(--ac2);background:rgba(247,168,208,.1)}
+.pt-cat-badge{
+  font-size:.6rem;padding:2px 6px;border-radius:4px;
+  background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);
+  white-space:nowrap;cursor:text;
+}
 </style>
 </head>
 <body>
@@ -390,19 +454,21 @@ textarea{resize:vertical;min-height:52px}
 
 <!-- SIDEBAR -->
 <aside class="sb" id="sb">
-  <div class="sb-logo"><span></span>Budget</div>
+  <div class="sb-logo" style="padding:20px 20px 18px;border-bottom:1px solid var(--brd)">
+    <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:var(--ac2);stroke:var(--ac2);stroke-width:.5" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+  </div>
   <nav class="sb-nav">
-    <div class="sb-label">Overview</div>
+    <div class="sb-label">ภาพรวม</div>
     <button class="sb-btn active" id="sbi-dashboard" onclick="go('dashboard',this)">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      Dashboard
+      สรุปผล
     </button>
     <button class="sb-btn" id="sbi-list" onclick="go('list',this)">
       <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
       รายการ
     </button>
     <div class="sb-sep"></div>
-    <div class="sb-label">Manage</div>
+    <div class="sb-label">จัดการ</div>
     <button class="sb-btn" id="sbi-add" onclick="go('add',this)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
       บันทึกรายการ
@@ -411,8 +477,12 @@ textarea{resize:vertical;min-height:52px}
       <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
       หมวดหมู่
     </button>
+    <button class="sb-btn" id="sbi-profit" onclick="go('profit',this)">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      คำนวณกำไร
+    </button>
     <div class="sb-sep"></div>
-    <div class="sb-label">System</div>
+    <div class="sb-label">ระบบ</div>
     <button class="sb-btn" id="sbi-settings" onclick="go('settings',this)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
       ตั้งค่า
@@ -445,7 +515,7 @@ textarea{resize:vertical;min-height:52px}
       <button class="mob-menu-btn" onclick="openSb()">
         <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
-      <div class="page-title">Dashboard</div>
+      <div class="page-title">รายรับ-รายจ่าย</div>
     </div>
     <div class="topbar-actions">
       <div class="period-bar" style="margin:0">
@@ -537,7 +607,26 @@ textarea{resize:vertical;min-height:52px}
     </div>
     <div class="f-grid">
       <div class="fg"><label>จำนวนเงิน (฿)</label><input type="number" id="f-amt" placeholder="0.00" min="0" step="0.01"></div>
-      <div class="fg"><label>วันที่</label><input type="date" id="f-date"></div>
+      <div class="fg"><label>วันที่</label>
+        <div class="cal-wrap" id="cal-wrap">
+          <div class="cal-input" id="cal-display" onclick="toggleCal()">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--txt2);fill:none;stroke-width:1.8;stroke-linecap:round;flex-shrink:0"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span id="cal-display-txt">เลือกวันที่</span>
+          </div>
+          <input type="hidden" id="f-date">
+          <div class="cal-popup" id="cal-popup" style="display:none">
+            <div class="cal-header">
+              <button class="cal-nav" onclick="calShift(-1)">‹</button>
+              <span class="cal-month-lbl" id="cal-month-lbl"></span>
+              <button class="cal-nav" onclick="calShift(1)">›</button>
+            </div>
+            <div class="cal-dow">
+              <span>อา</span><span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span>ส</span>
+            </div>
+            <div class="cal-days" id="cal-days"></div>
+          </div>
+        </div>
+      </div>
       <div class="fg"><label>หมวดหมู่</label><select id="f-cat"></select></div>
       <div class="fg"><label>รายละเอียด</label><input type="text" id="f-desc" placeholder="เช่น ข้าวมันไก่"></div>
       <div class="fg full"><label>หมายเหตุ / แท็ก</label><textarea id="f-note" placeholder="ใส่ #แท็ก ได้เลย เช่น #ด่วน #ที่ทำงาน"></textarea></div>
@@ -615,7 +704,7 @@ textarea{resize:vertical;min-height:52px}
     </div>
   </div>
   <div class="card">
-    <div class="card-title">ธีมสี</div>
+    <div class="card-title">ธีมสำเร็จรูป</div>
     <div class="preset-btns">
       <button class="pb" onclick="applyPreset('default')">Default</button>
       <button class="pb" onclick="applyPreset('ocean')">Ocean</button>
@@ -623,10 +712,39 @@ textarea{resize:vertical;min-height:52px}
       <button class="pb" onclick="applyPreset('forest')">Forest</button>
       <button class="pb" onclick="applyPreset('violet')">Violet</button>
       <button class="pb" onclick="applyPreset('mono')">Mono</button>
+      <button class="pb" onclick="applyPreset('rose')">Rose</button>
+      <button class="pb" onclick="applyPreset('midnight')">Midnight</button>
     </div>
-    <div class="color-row"><label>สีหลัก</label><input type="color" id="c1" value="#7ec8f7" oninput="applyColors()"></div>
-    <div class="color-row"><label>สีรอง</label><input type="color" id="c2" value="#f7a8d0" oninput="applyColors()"></div>
-    <div class="color-row"><label>สีเสริม</label><input type="color" id="c3" value="#ffe88a" oninput="applyColors()"></div>
+  </div>
+
+  <div class="card" style="margin-top:10px">
+    <div class="card-title">สีปรับแต่งเอง</div>
+    <div class="color-row"><label>Accent หลัก (ปุ่ม / ไฮไลต์)</label><input type="color" id="c1" value="#7ec8f7" oninput="applyColors()"></div>
+    <div class="color-row"><label>Accent รอง (รายจ่าย)</label><input type="color" id="c2" value="#f7a8d0" oninput="applyColors()"></div>
+    <div class="color-row"><label>Accent เสริม (แจ้งเตือน)</label><input type="color" id="c3" value="#ffe88a" oninput="applyColors()"></div>
+    <div class="color-row"><label>พื้นหลังหลัก</label><input type="color" id="c-bg" value="#0c0e16" oninput="applyColors()"></div>
+    <div class="color-row"><label>พื้นหลัง Card</label><input type="color" id="c-card" value="#161924" oninput="applyColors()"></div>
+    <div class="color-row"><label>พื้นหลัง Sidebar</label><input type="color" id="c-sb" value="#11141f" oninput="applyColors()"></div>
+    <div class="color-row"><label>สีอักษรหลัก</label><input type="color" id="c-txt" value="#d8ddf0" oninput="applyColors()"></div>
+    <div class="color-row"><label>สีอักษรรอง</label><input type="color" id="c-txt2" value="#5a6690" oninput="applyColors()"></div>
+    <div class="color-row"><label>สีเส้นขอบ</label><input type="color" id="c-brd" value="#252b45" oninput="applyColors()"></div>
+    <div style="margin-top:10px;display:flex;gap:6px">
+      <button class="sec-btn" onclick="resetColors()">รีเซ็ตสี</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:10px">
+    <div class="card-title">ฟอนต์</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px" id="font-btns">
+      <button class="pb" onclick="applyFont('Prompt')">Prompt</button>
+      <button class="pb" onclick="applyFont('Sarabun')">Sarabun</button>
+      <button class="pb" onclick="applyFont('Mitr')">Mitr</button>
+      <button class="pb" onclick="applyFont('Kanit')">Kanit</button>
+      <button class="pb" onclick="applyFont('Itim')">Itim</button>
+      <button class="pb" onclick="applyFont('Pridi')">Pridi</button>
+      <button class="pb" onclick="applyFont('Noto Sans Thai')">Noto Sans</button>
+    </div>
+    <div style="font-size:.68rem;color:var(--txt2)">ฟอนต์ปัจจุบัน: <span id="cur-font-lbl" style="color:var(--ac1)">Prompt</span></div>
   </div>
   <div class="card" style="margin-top:12px">
     <div class="card-title">Google Sheets</div>
@@ -639,6 +757,87 @@ textarea{resize:vertical;min-height:52px}
     <div class="card-title">ข้อมูล</div>
     <button class="sec-btn" onclick="exportCSV()">Export CSV</button>
     <button class="sec-btn danger" onclick="clearAll()">ล้างข้อมูลทั้งหมด</button>
+  </div>
+</div>
+
+<!-- ── PROFIT CALCULATOR ───────────────────── -->
+<div class="page" id="page-profit">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="mob-menu-btn" onclick="openSb()"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="page-title">คำนวณกำไร</div>
+    </div>
+    <button class="primary-btn" style="width:auto;padding:7px 16px;margin:0" onclick="addProfitRow()">+ เพิ่มรายการ</button>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="stat-grid" style="margin-bottom:12px">
+    <div class="stat" style="border-top:2px solid var(--ac1)">
+      <div class="stat-lbl">รายรับรวม (ราคาขาย)</div>
+      <div class="stat-val" id="pr-revenue" style="color:var(--ac1)">฿0.00</div>
+      <div class="stat-sub" id="pr-rev-sub">เฉพาะรายการที่เปิดใช้</div>
+    </div>
+    <div class="stat" style="border-top:2px solid var(--ac2)">
+      <div class="stat-lbl">ต้นทุนรวม</div>
+      <div class="stat-val" id="pr-cost" style="color:var(--ac2)">฿0.00</div>
+      <div class="stat-sub" id="pr-cost-sub">เฉพาะรายการที่เปิดใช้</div>
+    </div>
+    <div class="stat" style="border-top:2px solid #4ecb8d">
+      <div class="stat-lbl">กำไรสุทธิ</div>
+      <div class="stat-val" id="pr-profit" style="color:#4ecb8d">฿0.00</div>
+      <div class="stat-sub" id="pr-margin">Margin 0%</div>
+    </div>
+  </div>
+
+  <!-- Profit margin bar -->
+  <div class="card" style="margin-bottom:12px;padding:14px 18px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span style="font-size:.65rem;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.7px">Profit Margin</span>
+      <span id="pr-margin-pct" style="font-size:.78rem;font-weight:600;color:#4ecb8d">0%</span>
+    </div>
+    <div style="height:5px;background:var(--sur2);border-radius:99px;overflow:hidden;border:1px solid var(--brd)">
+      <div id="pr-margin-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,var(--ac1),#4ecb8d);width:0%;transition:width .5s"></div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="overflow-x:auto">
+      <table id="profit-table" style="width:100%;border-collapse:collapse;font-size:.78rem">
+        <thead>
+          <tr style="border-bottom:1px solid var(--brd);background:var(--sur2)">
+            <th style="padding:10px 14px;text-align:left;font-size:.6rem;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap">เปิดใช้</th>
+            <th style="padding:10px 14px;text-align:left;font-size:.6rem;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.6px">ชื่อรายการ</th>
+            <th style="padding:10px 14px;text-align:right;font-size:.6rem;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap">ราคาขาย (฿)</th>
+            <th style="padding:10px 14px;text-align:right;font-size:.6rem;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap">ต้นทุน (฿)</th>
+            <th style="padding:10px 14px;text-align:right;font-size:.6rem;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap">กำไร (฿)</th>
+            <th style="padding:10px 14px;text-align:right;font-size:.6rem;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.6px">%</th>
+            <th style="padding:10px 14px;text-align:center;font-size:.6rem;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.6px">หมวด</th>
+            <th style="padding:10px 14px;text-align:center;font-size:.6rem;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.6px">หมายเหตุ</th>
+            <th style="padding:10px 6px;width:32px"></th>
+          </tr>
+        </thead>
+        <tbody id="profit-tbody"></tbody>
+        <tfoot>
+          <tr id="profit-tfoot" style="border-top:2px solid var(--brd);background:var(--sur2)">
+            <td colspan="2" style="padding:10px 14px;font-size:.72rem;font-weight:600;color:var(--txt2)">รวม (เฉพาะที่เปิดใช้)</td>
+            <td style="padding:10px 14px;text-align:right;font-weight:700;color:var(--ac1)" id="tf-rev">฿0</td>
+            <td style="padding:10px 14px;text-align:right;font-weight:700;color:var(--ac2)" id="tf-cost">฿0</td>
+            <td style="padding:10px 14px;text-align:right;font-weight:700;color:#4ecb8d" id="tf-profit">฿0</td>
+            <td colspan="4" style="padding:10px 14px;text-align:right;font-size:.7rem;color:var(--txt2)" id="tf-margin">—</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div id="profit-empty" style="text-align:center;padding:40px;color:var(--txt2);font-size:.8rem;display:none">
+      <div style="font-size:1.6rem;opacity:.3;margin-bottom:8px">○</div>
+      ยังไม่มีรายการ กด "+ เพิ่มรายการ" เพื่อเริ่ม
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <button class="sec-btn" onclick="exportProfitCSV()">Export CSV</button>
+    <button class="sec-btn" onclick="clearProfit()" style="color:var(--ac2)">ล้างทั้งหมด</button>
   </div>
 </div>
 
@@ -749,12 +948,14 @@ const DCATS={
 };
 const PAL=['#7ec8f7','#f7a8d0','#ffe88a','#4ecb8d','#c5b4f7','#f7c87a','#a8d8f7','#f0b8d8','#b4f0d4','#f0e0a0','#90c8f0','#f090b8'];
 const PRESETS={
-  default:['#7ec8f7','#f7a8d0','#ffe88a'],
-  ocean:['#5bc8f5','#80d8c8','#ffe066'],
-  sunset:['#f5a55b','#f56060','#fff080'],
-  forest:['#5bd68a','#a0d85b','#f5e85b'],
-  violet:['#b06ef5','#f07aeb','#7af0d8'],
-  mono:['#aabbd4','#8899bb','#d4d0c0'],
+  default:{ac1:'#7ec8f7',ac2:'#f7a8d0',ac3:'#ffe88a',bg:'#0c0e16',card:'#161924',sb:'#11141f',txt:'#d8ddf0',txt2:'#5a6690',brd:'#252b45'},
+  ocean:  {ac1:'#5bc8f5',ac2:'#80d8c8',ac3:'#ffe066',bg:'#081420',card:'#0e1e2e',sb:'#0a1828',txt:'#cce8f8',txt2:'#4a7090',brd:'#1a3040'},
+  sunset: {ac1:'#f5a55b',ac2:'#f56060',ac3:'#fff080',bg:'#130a06',card:'#1e100a',sb:'#160d08',txt:'#f8e0cc',txt2:'#906050',brd:'#3a1a10'},
+  forest: {ac1:'#5bd68a',ac2:'#a0d85b',ac3:'#f5e85b',bg:'#080f0a',card:'#0e1810',sb:'#0a1408',txt:'#cce8d4',txt2:'#4a7050',brd:'#1a3020'},
+  violet: {ac1:'#b06ef5',ac2:'#f07aeb',ac3:'#7af0d8',bg:'#0d0818',card:'#160e28',sb:'#110a20',txt:'#e0ccf8',txt2:'#7050a0',brd:'#2a1840'},
+  mono:   {ac1:'#aabbd4',ac2:'#8899bb',ac3:'#d4d0c0',bg:'#0e0f12',card:'#181a20',sb:'#141518',txt:'#c8ccd8',txt2:'#5a6070',brd:'#282c38'},
+  rose:   {ac1:'#f472b6',ac2:'#fb7185',ac3:'#fde68a',bg:'#120a10',card:'#1e1018',sb:'#180c14',txt:'#fce7f3',txt2:'#9d6080',brd:'#3a1a2e'},
+  midnight:{ac1:'#818cf8',ac2:'#a78bfa',ac3:'#fbbf24',bg:'#050614',card:'#0d0f24',sb:'#080a1c',txt:'#e0e7ff',txt2:'#4f6080',brd:'#1e2248'},
 };
 let txs=JSON.parse(localStorage.getItem('sb_txs')||'[]');
 let cats=JSON.parse(localStorage.getItem('sb_cats')||JSON.stringify(DCATS));
@@ -771,6 +972,14 @@ let ch={};
 /* ── INIT ─────────────────────────────── */
 window.onload=()=>{
   document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+  // init calendar display with today
+  const todayInit=new Date();
+  calSelected=new Date(todayInit.getFullYear(),todayInit.getMonth(),todayInit.getDate());
+  calViewDate=new Date(todayInit.getFullYear(),todayInit.getMonth(),1);
+  const pad=n=>String(n).padStart(2,'0');
+  document.getElementById('f-date').value=`${todayInit.getFullYear()}-${pad(todayInit.getMonth()+1)}-${pad(todayInit.getDate())}`;
+  document.getElementById('cal-display-txt').textContent=todayInit.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('cal-display').classList.add('has-date');
   loadColors();updateCatSel();updateSbStatus();renderAll();renderCatChips();renderRecList();
   initSF();
   if(sheetsUrl)syncSheets();
@@ -825,52 +1034,148 @@ function go(p,btn){
   if(p==='list'){buildMoFilter();renderList();}
   if(p==='cats')renderCatChips();
   if(p==='add')renderRecList();
+  if(p==='profit')renderProfitTable();
 }
 
 /* ── THEME ────────────────────────────── */
+const LIGHT_DEFAULTS={
+  'c-bg':'#f6f7fb','c-card':'#ffffff','c-sb':'#ffffff',
+  'c-txt':'#1a1f3a','c-txt2':'#6070a0','c-brd':'#dde2f2'
+};
+const DARK_DEFAULTS={
+  'c-bg':'#0c0e16','c-card':'#161924','c-sb':'#11141f',
+  'c-txt':'#d8ddf0','c-txt2':'#5a6690','c-brd':'#252b45'
+};
+
 function toggleTheme(){
   const el=document.documentElement;
   const dark=el.getAttribute('data-theme')==='dark';
-  el.setAttribute('data-theme',dark?'light':'dark');
+  const newTheme=dark?'light':'dark';
+  el.setAttribute('data-theme',newTheme);
+  localStorage.setItem('sb-theme',newTheme);
   document.getElementById('theme-lbl').textContent=dark?'Dark mode':'Light mode';
-  // update theme icon path for sun vs moon
   const ic=document.getElementById('theme-ic');
   ic.innerHTML=dark
     ? '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>'
     : '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+  // reapply color vars for the new theme (override inline styles)
+  const themeBase=dark?LIGHT_DEFAULTS:DARK_DEFAULTS;
+  const acc={c1:localStorage.getItem('c1')||COLOR_DEFAULTS.c1,
+             c2:localStorage.getItem('c2')||COLOR_DEFAULTS.c2,
+             c3:localStorage.getItem('c3')||COLOR_DEFAULTS.c3};
+  applyVars({...themeBase,...acc,'c-bg':themeBase['c-bg'],'c-card':themeBase['c-card'],'c-sb':themeBase['c-sb'],'c-txt':themeBase['c-txt'],'c-txt2':themeBase['c-txt2'],'c-brd':themeBase['c-brd']});
+  // sync color pickers to new theme base
+  ['c-bg','c-card','c-sb','c-txt','c-txt2','c-brd'].forEach(k=>{
+    const inp=document.getElementById(k);
+    if(inp)inp.value=themeBase[k];
+    localStorage.setItem(k,themeBase[k]);
+  });
   setTimeout(()=>renderCharts(),80);
 }
 
 /* ── COLORS ───────────────────────────── */
+const COLOR_KEYS=['c1','c2','c3','c-bg','c-card','c-sb','c-txt','c-txt2','c-brd'];
+const COLOR_DEFAULTS={c1:'#7ec8f7','c2':'#f7a8d0','c3':'#ffe88a','c-bg':'#0c0e16','c-card':'#161924','c-sb':'#11141f','c-txt':'#d8ddf0','c-txt2':'#5a6690','c-brd':'#252b45'};
+
 function loadColors(){
-  const c1=localStorage.getItem('c1')||'#7ec8f7';
-  const c2=localStorage.getItem('c2')||'#f7a8d0';
-  const c3=localStorage.getItem('c3')||'#ffe88a';
-  setColors(c1,c2,c3);
-  document.getElementById('c1').value=c1;
-  document.getElementById('c2').value=c2;
-  document.getElementById('c3').value=c3;
+  // restore theme
+  const savedTheme=localStorage.getItem('sb-theme')||'dark';
+  document.documentElement.setAttribute('data-theme',savedTheme);
+  const ic=document.getElementById('theme-ic');
+  const isDark=savedTheme==='dark';
+  if(ic)ic.innerHTML=isDark
+    ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+    : '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+  const lbl=document.getElementById('theme-lbl');
+  if(lbl)lbl.textContent=isDark?'Light mode':'Dark mode';
+  // restore colors (fallback to theme defaults if not set)
+  const themeBase=isDark?DARK_DEFAULTS:LIGHT_DEFAULTS;
+  const vals={};
+  COLOR_KEYS.forEach(k=>{
+    vals[k]=localStorage.getItem(k)||(themeBase[k]||COLOR_DEFAULTS[k]);
+  });
+  applyVars(vals);
+  COLOR_KEYS.forEach(k=>{const el=document.getElementById(k);if(el)el.value=vals[k];});
+  const f=localStorage.getItem('sb-font')||'Prompt';
+  applyFontDirect(f);
 }
 function applyColors(){
-  const c1=document.getElementById('c1').value;
-  const c2=document.getElementById('c2').value;
-  const c3=document.getElementById('c3').value;
-  setColors(c1,c2,c3);
-  localStorage.setItem('c1',c1);localStorage.setItem('c2',c2);localStorage.setItem('c3',c3);
+  const vals={};
+  COLOR_KEYS.forEach(k=>{
+    const el=document.getElementById(k);
+    vals[k]=el?el.value:(localStorage.getItem(k)||COLOR_DEFAULTS[k]);
+  });
+  applyVars(vals);
+  COLOR_KEYS.forEach(k=>localStorage.setItem(k,vals[k]));
   setTimeout(()=>renderCharts(),60);
 }
-function setColors(c1,c2,c3){
+function applyVars(v){
   const r=document.documentElement.style;
-  r.setProperty('--ac1',c1);r.setProperty('--ac2',c2);r.setProperty('--ac3',c3);
+  r.setProperty('--ac1',v.c1||v['c1']);
+  r.setProperty('--ac2',v.c2||v['c2']);
+  r.setProperty('--ac3',v.c3||v['c3']);
+  r.setProperty('--bg', v['c-bg']);
+  r.setProperty('--bg2',lighten(v['c-bg'],5));
+  r.setProperty('--sur',v['c-card']);
+  r.setProperty('--sur2',lighten(v['c-card'],4));
+  r.setProperty('--sb-bg',v['c-sb']||v['c-card']);
+  r.setProperty('--txt', v['c-txt']);
+  r.setProperty('--txt2',v['c-txt2']);
+  r.setProperty('--txt3',darken(v['c-txt2'],15));
+  r.setProperty('--brd', v['c-brd']);
+  r.setProperty('--brd2',lighten(v['c-brd'],8));
+  r.setProperty('--card',v['c-card']);
+  r.setProperty('--sh',  `0 2px 16px rgba(0,0,0,.3)`);
+  // also update sidebar bg directly since it uses --bg2
+  document.documentElement.style.setProperty('--bg2', lighten(v['c-bg'],5));
+}
+function lighten(hex,pct){
+  const n=parseInt(hex.replace('#',''),16);
+  const r=Math.min(255,((n>>16)&0xff)+Math.round(255*pct/100));
+  const g=Math.min(255,((n>>8)&0xff)+Math.round(255*pct/100));
+  const b=Math.min(255,(n&0xff)+Math.round(255*pct/100));
+  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+function darken(hex,pct){
+  const n=parseInt(hex.replace('#',''),16);
+  const r=Math.max(0,((n>>16)&0xff)-Math.round(255*pct/100));
+  const g=Math.max(0,((n>>8)&0xff)-Math.round(255*pct/100));
+  const b=Math.max(0,(n&0xff)-Math.round(255*pct/100));
+  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
 }
 function applyPreset(name){
-  const [c1,c2,c3]=PRESETS[name];
-  setColors(c1,c2,c3);
-  document.getElementById('c1').value=c1;
-  document.getElementById('c2').value=c2;
-  document.getElementById('c3').value=c3;
-  localStorage.setItem('c1',c1);localStorage.setItem('c2',c2);localStorage.setItem('c3',c3);
+  const p=PRESETS[name];if(!p)return;
+  const map={c1:p.ac1,c2:p.ac2,c3:p.ac3,'c-bg':p.bg,'c-card':p.card,'c-sb':p.sb,'c-txt':p.txt,'c-txt2':p.txt2,'c-brd':p.brd};
+  COLOR_KEYS.forEach(k=>{const el=document.getElementById(k);if(el&&map[k])el.value=map[k];localStorage.setItem(k,map[k]||COLOR_DEFAULTS[k]);});
+  applyVars(map);
+  // force dark theme for presets
+  document.documentElement.setAttribute('data-theme','dark');
   setTimeout(()=>renderCharts(),60);
+}
+function resetColors(){
+  COLOR_KEYS.forEach(k=>{localStorage.setItem(k,COLOR_DEFAULTS[k]);const el=document.getElementById(k);if(el)el.value=COLOR_DEFAULTS[k];});
+  applyVars(COLOR_DEFAULTS);setTimeout(()=>renderCharts(),60);showToast('รีเซ็ตสีแล้ว','ok');
+}
+
+/* ── FONTS ────────────────────────────── */
+const GFONTS_LOADED={};
+function applyFont(name){
+  applyFontDirect(name);
+  localStorage.setItem('sb-font',name);
+  const lbl=document.getElementById('cur-font-lbl');if(lbl)lbl.textContent=name;
+  showToast('เปลี่ยนฟอนต์เป็น '+name,'ok');
+}
+function applyFontDirect(name){
+  if(!GFONTS_LOADED[name]){
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href=`https://fonts.googleapis.com/css2?family=${encodeURIComponent(name)}:wght@300;400;500;600;700&display=swap`;
+    document.head.appendChild(link);
+    GFONTS_LOADED[name]=true;
+  }
+  document.documentElement.style.setProperty('--font',`'${name}',sans-serif`);
+  document.body.style.fontFamily=`'${name}',sans-serif`;
+  const lbl=document.getElementById('cur-font-lbl');if(lbl)lbl.textContent=name;
 }
 
 /* ── PERIOD ───────────────────────────── */
@@ -1260,7 +1565,214 @@ function showToast(msg,type='ok'){
   clearTimeout(t._t);t._t=setTimeout(()=>t.className='',2800);
 }
 
-/* ── HELPERS ──────────────────────────── */
+/* ── CALENDAR PICKER ──────────────────────── */
+let calViewDate = new Date();
+let calSelected = new Date();
+
+function toggleCal(){
+  const pop=document.getElementById('cal-popup');
+  const isOpen=pop.style.display==='block';
+  if(isOpen){pop.style.display='none';return;}
+  pop.style.display='block';
+  renderCal();
+  // close on outside click
+  setTimeout(()=>document.addEventListener('click',calOutsideClick,{once:true}),10);
+}
+function calOutsideClick(e){
+  const wrap=document.getElementById('cal-wrap');
+  if(!wrap.contains(e.target)) document.getElementById('cal-popup').style.display='none';
+  else document.addEventListener('click',calOutsideClick,{once:true});
+}
+function calShift(d){
+  calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()+d,1);
+  renderCal();
+}
+function renderCal(){
+  const y=calViewDate.getFullYear(), m=calViewDate.getMonth();
+  const monthNames=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  document.getElementById('cal-month-lbl').textContent=`${monthNames[m]} ${y+543}`;
+  const first=new Date(y,m,1).getDay(); // 0=Sun
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const today=new Date(); today.setHours(0,0,0,0);
+  const sel=calSelected; sel.setHours(0,0,0,0);
+  let html='';
+  // empty cells before first day
+  for(let i=0;i<first;i++) html+=`<div class="cal-day empty"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const dt=new Date(y,m,d);
+    const isToday=dt.getTime()===today.getTime();
+    const isSel=dt.getTime()===sel.getTime();
+    html+=`<button class="cal-day${isToday?' today':''}${isSel?' selected':''}" onclick="calSelect(${y},${m},${d})">${d}</button>`;
+  }
+  document.getElementById('cal-days').innerHTML=html;
+}
+function calSelect(y,m,d){
+  calSelected=new Date(y,m,d);
+  calViewDate=new Date(y,m,1);
+  const pad=n=>String(n).padStart(2,'0');
+  const val=`${y}-${pad(m+1)}-${pad(d)}`;
+  document.getElementById('f-date').value=val;
+  const display=calSelected.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'});
+  const disp=document.getElementById('cal-display-txt');
+  disp.textContent=display;
+  document.getElementById('cal-display').classList.add('has-date');
+  document.getElementById('cal-popup').style.display='none';
+}
+
+/* ── PROFIT CALCULATOR ──────────────────── */
+let profitRows = JSON.parse(localStorage.getItem('sb_profit') || '[]');
+
+function saveProfitRows(){ localStorage.setItem('sb_profit', JSON.stringify(profitRows)) }
+
+function addProfitRow(name='', price=0, cost=0, cat='', note='', on=true){
+  const id = Date.now() + Math.random();
+  profitRows.push({ id, name, price, cost, cat, note, on });
+  saveProfitRows();
+  renderProfitTable();
+}
+
+function renderProfitTable(){
+  const tbody = document.getElementById('profit-tbody');
+  const empty = document.getElementById('profit-empty');
+  const table = document.getElementById('profit-table');
+
+  if(!profitRows.length){
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    table.querySelector('thead').style.display = 'none';
+    document.getElementById('profit-tfoot').style.display = 'none';
+    updateProfitSummary();
+    return;
+  }
+  empty.style.display = 'none';
+  table.querySelector('thead').style.display = '';
+  document.getElementById('profit-tfoot').style.display = '';
+
+  tbody.innerHTML = profitRows.map((r, i) => {
+    const profit = (r.price || 0) - (r.cost || 0);
+    const margin = r.price ? ((profit / r.price) * 100).toFixed(1) : '—';
+    const profitClass = profit >= 0 ? 'pt-profit-pos' : 'pt-profit-neg';
+    return `<tr class="pt-row${r.on ? '' : ' disabled'}" id="ptr-${i}">
+      <td style="padding:8px 14px;text-align:center">
+        <button class="pt-toggle${r.on ? ' on' : ''}" onclick="toggleProfitRow(${i})" title="${r.on ? 'ปิดใช้' : 'เปิดใช้'}"></button>
+      </td>
+      <td style="padding:8px 14px;min-width:130px">
+        <input class="pt-input" value="${escHtml(r.name)}" placeholder="ชื่อรายการ..."
+          oninput="updateProfitField(${i},'name',this.value)">
+      </td>
+      <td style="padding:8px 14px;min-width:100px">
+        <input class="pt-input num" type="number" value="${r.price||''}" placeholder="0"
+          oninput="updateProfitField(${i},'price',parseFloat(this.value)||0)">
+      </td>
+      <td style="padding:8px 14px;min-width:100px">
+        <input class="pt-input num" type="number" value="${r.cost||''}" placeholder="0"
+          oninput="updateProfitField(${i},'cost',parseFloat(this.value)||0)">
+      </td>
+      <td style="padding:8px 14px;text-align:right" class="${profitClass}">
+        ${profit >= 0 ? '+' : ''}${fmtN(profit)}
+      </td>
+      <td style="padding:8px 14px;text-align:right;font-size:.7rem;color:var(--txt2)">
+        ${margin}${margin !== '—' ? '%' : ''}
+      </td>
+      <td style="padding:8px 10px;min-width:80px">
+        <input class="pt-input" value="${escHtml(r.cat)}" placeholder="หมวด..."
+          oninput="updateProfitField(${i},'cat',this.value)" style="font-size:.7rem">
+      </td>
+      <td style="padding:8px 10px;min-width:100px">
+        <input class="pt-input" value="${escHtml(r.note)}" placeholder="หมายเหตุ..."
+          oninput="updateProfitField(${i},'note',this.value)" style="font-size:.7rem">
+      </td>
+      <td style="padding:8px 6px;text-align:center">
+        <button class="pt-del" onclick="deleteProfitRow(${i})" title="ลบ">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  updateProfitSummary();
+}
+
+function updateProfitField(i, field, val){
+  profitRows[i][field] = val;
+  saveProfitRows();
+  // re-render only the profit cell and summary (no full re-render to keep focus)
+  updateProfitRowCalc(i);
+  updateProfitSummary();
+}
+
+function updateProfitRowCalc(i){
+  const r = profitRows[i];
+  const profit = (r.price || 0) - (r.cost || 0);
+  const margin = r.price ? ((profit / r.price) * 100).toFixed(1) : '—';
+  const cells = document.querySelectorAll(`#ptr-${i} td`);
+  if(cells[4]){
+    cells[4].className = profit >= 0 ? 'pt-profit-pos' : 'pt-profit-neg';
+    cells[4].style.cssText = 'padding:8px 14px;text-align:right';
+    cells[4].textContent = (profit >= 0 ? '+' : '') + fmtN(profit);
+  }
+  if(cells[5]) cells[5].textContent = margin !== '—' ? margin + '%' : '—';
+}
+
+function toggleProfitRow(i){
+  profitRows[i].on = !profitRows[i].on;
+  saveProfitRows();
+  renderProfitTable();
+}
+
+function deleteProfitRow(i){
+  profitRows.splice(i, 1);
+  saveProfitRows();
+  renderProfitTable();
+}
+
+function updateProfitSummary(){
+  const active = profitRows.filter(r => r.on);
+  const rev  = active.reduce((s, r) => s + (r.price || 0), 0);
+  const cost = active.reduce((s, r) => s + (r.cost  || 0), 0);
+  const profit = rev - cost;
+  const margin = rev ? ((profit / rev) * 100) : 0;
+
+  document.getElementById('pr-revenue').textContent = '฿' + fmtN(rev);
+  document.getElementById('pr-cost').textContent    = '฿' + fmtN(cost);
+  document.getElementById('pr-profit').textContent  = (profit >= 0 ? '+' : '') + '฿' + fmtN(profit);
+  document.getElementById('pr-profit').style.color  = profit >= 0 ? '#4ecb8d' : 'var(--ac2)';
+  document.getElementById('pr-margin').textContent  = `Margin ${margin.toFixed(1)}%`;
+  document.getElementById('pr-margin-pct').textContent = margin.toFixed(1) + '%';
+  document.getElementById('pr-margin-bar').style.width = Math.min(margin, 100) + '%';
+  document.getElementById('pr-rev-sub').textContent  = active.length + ' รายการที่เปิดใช้';
+  document.getElementById('pr-cost-sub').textContent = active.length + ' รายการที่เปิดใช้';
+
+  // footer row
+  document.getElementById('tf-rev').textContent    = '฿' + fmtN(rev);
+  document.getElementById('tf-cost').textContent   = '฿' + fmtN(cost);
+  document.getElementById('tf-profit').textContent = (profit>=0?'+':'') + '฿' + fmtN(profit);
+  document.getElementById('tf-margin').textContent = `Margin ${margin.toFixed(1)}%  |  ${active.length}/${profitRows.length} รายการ`;
+}
+
+function exportProfitCSV(){
+  const rows = [['เปิดใช้','ชื่อรายการ','ราคาขาย','ต้นทุน','กำไร','Margin%','หมวด','หมายเหตุ']];
+  profitRows.forEach(r => {
+    const profit = (r.price||0) - (r.cost||0);
+    const margin = r.price ? ((profit/r.price)*100).toFixed(1) : '';
+    rows.push([r.on?'ใช้':'ไม่ใช้', r.name, r.price||0, r.cost||0, profit, margin, r.cat||'', r.note||'']);
+  });
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'}));
+  a.download = `profit_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  showToast('Export CSV แล้ว','ok');
+}
+
+function clearProfit(){
+  if(!confirm('ล้างข้อมูลกำไรทั้งหมด?')) return;
+  profitRows = []; saveProfitRows(); renderProfitTable();
+  showToast('ล้างแล้ว','in');
+}
+
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') }
+function fmtN(n){ return Math.abs(n).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}) }
+
+/* ── HELPERS ──────────────────────────────── */
 function fmt(n){return'฿'+Math.abs(n).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})}
 </script>
 </body>
