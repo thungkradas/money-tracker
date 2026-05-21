@@ -3,701 +3,602 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Budget — บัญชีส่วนตัว</title>
+<title>Budget</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ═══ TOKENS ═══════════════════════════════════════════ */
-:root {
-  --ac1: #7ec8f7;   /* accent blue  — user editable */
-  --ac2: #f7a8d0;   /* accent pink  — user editable */
-  --ac3: #ffe88a;   /* accent yellow — user editable */
-  --r: 16px; --rs: 10px;
+/* ── TOKENS ─────────────────────────────── */
+:root{--ac1:#7ec8f7;--ac2:#f7a8d0;--ac3:#ffe88a;--r:12px;--rs:8px}
+[data-theme="dark"]{
+  --bg:#0c0e16;--bg2:#11141f;--sur:#161924;--sur2:#1e2235;
+  --brd:#252b45;--txt:#d8ddf0;--txt2:#5a6690;--txt3:#3d4870;
+  --card:#161924;--sh:0 2px 16px rgba(0,0,0,.4);
 }
-[data-theme="dark"] {
-  --bg:      #0e1018; --bg2: #141720;
-  --sur:     #1a1e2e; --sur2: #22273d;
-  --brd:     #2a3050; --brd2: #354070;
-  --txt:     #dde2f5; --txt2: #6878aa;
-  --card:    rgba(22,26,46,.82);
-  --sh:      0 4px 24px rgba(0,0,0,.45);
-  --sb-bg:   #101320; --sb-brd: #1f2540;
+[data-theme="light"]{
+  --bg:#f6f7fb;--bg2:#eef0f8;--sur:#fff;--sur2:#f0f2fa;
+  --brd:#dde2f2;--txt:#1a1f3a;--txt2:#6070a0;--txt3:#b0bcd8;
+  --card:#fff;--sh:0 2px 12px rgba(80,100,200,.08);
 }
-[data-theme="light"] {
-  --bg:      #f2f5fc; --bg2: #e8edf8;
-  --sur:     rgba(255,255,255,.92); --sur2: #f0f3fc;
-  --brd:     #d0d8ee; --brd2: #b8c4e4;
-  --txt:     #1c2140; --txt2: #5868a0;
-  --card:    rgba(255,255,255,.88);
-  --sh:      0 2px 16px rgba(80,100,200,.10);
-  --sb-bg:   #fff; --sb-brd: #d8e0f0;
-}
-
-/* ═══ RESET ═════════════════════════════════════════════ */
+/* ── RESET ───────────────────────────────── */
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--txt);
-  min-height:100vh;display:flex;overflow-x:hidden;transition:background .35s,color .35s}
-
-/* ═══ STARFIELD ══════════════════════════════════════════ */
-#sf{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55;transition:opacity .4s}
-[data-theme="light"] #sf{opacity:.18}
-
-/* ═══ SIDEBAR ════════════════════════════════════════════ */
+  height:100vh;display:flex;overflow:hidden;font-size:14px;transition:background .3s,color .3s}
+/* ── STARFIELD ───────────────────────────── */
+#sf{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;transition:opacity .4s}
+[data-theme="light"] #sf{opacity:.1}
+/* ── SIDEBAR ─────────────────────────────── */
 .sb{
-  position:fixed;top:0;left:0;height:100vh;z-index:200;
-  width:240px;background:var(--sb-bg);
-  border-right:1px solid var(--sb-brd);
-  display:flex;flex-direction:column;
-  transform:translateX(-100%);
-  transition:transform .28s cubic-bezier(.4,0,.2,1);
-  backdrop-filter:blur(20px);
-}
-.sb.open{transform:translateX(0)}
-.sb-head{
-  padding:22px 20px 16px;
-  border-bottom:1px solid var(--sb-brd);
-  display:flex;align-items:center;justify-content:space-between;
+  width:220px;flex-shrink:0;height:100vh;
+  background:var(--bg2);border-right:1px solid var(--brd);
+  display:flex;flex-direction:column;z-index:10;
+  position:relative;transition:background .3s;
 }
 .sb-logo{
-  font-size:1.1rem;font-weight:700;
-  background:linear-gradient(90deg,var(--ac1),var(--ac2));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-clip:text;
+  padding:24px 20px 20px;
+  font-size:.95rem;font-weight:700;letter-spacing:-.3px;
+  color:var(--txt);border-bottom:1px solid var(--brd);
 }
-.sb-close{
-  background:none;border:none;color:var(--txt2);
-  cursor:pointer;font-size:1.2rem;padding:4px;
-  border-radius:6px;transition:color .2s;
+.sb-logo span{
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:var(--ac1);margin-right:8px;vertical-align:middle;
 }
-.sb-close:hover{color:var(--txt)}
-.sb-nav{flex:1;overflow-y:auto;padding:12px 10px}
-.sb-item{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 14px;border-radius:var(--rs);
-  border:none;background:none;color:var(--txt2);
-  font-family:'Prompt',sans-serif;font-size:.88rem;
+.sb-nav{flex:1;overflow-y:auto;padding:10px 8px}
+.sb-label{
+  font-size:.6rem;font-weight:600;color:var(--txt3);
+  text-transform:uppercase;letter-spacing:1px;
+  padding:12px 12px 4px;
+}
+.sb-btn{
+  display:flex;align-items:center;gap:9px;
+  padding:8px 12px;border-radius:var(--rs);border:none;
+  background:none;color:var(--txt2);
+  font-family:'Prompt',sans-serif;font-size:.82rem;
   cursor:pointer;width:100%;text-align:left;
-  transition:all .2s;margin-bottom:2px;
+  transition:all .18s;margin-bottom:1px;
 }
-.sb-item .ic{width:18px;text-align:center;font-size:.95rem}
-.sb-item:hover{background:var(--sur2);color:var(--txt)}
-.sb-item.active{
-  background:linear-gradient(135deg,rgba(126,200,247,.15),rgba(247,168,208,.12));
-  color:var(--txt);
-  border:1px solid rgba(126,200,247,.25);
+.sb-btn svg{width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sb-btn:hover{background:var(--sur2);color:var(--txt)}
+.sb-btn.active{background:var(--sur);color:var(--txt);font-weight:500;
+  box-shadow:var(--sh);}
+.sb-btn.active svg{color:var(--ac1)}
+.sb-sep{height:1px;background:var(--brd);margin:8px 0}
+.sb-foot{padding:10px 8px 16px;border-top:1px solid var(--brd)}
+.sb-status{
+  display:flex;align-items:center;gap:7px;
+  padding:8px 12px;border-radius:var(--rs);
+  font-size:.72rem;color:var(--txt2);margin-bottom:6px;
 }
-.sb-sep{height:1px;background:var(--sb-brd);margin:10px 0}
-.sb-section{
-  font-size:.65rem;font-weight:600;color:var(--txt2);
-  text-transform:uppercase;letter-spacing:.8px;
-  padding:4px 14px 6px;
-}
-.sb-foot{padding:14px 10px;border-top:1px solid var(--sb-brd)}
-
-/* ═══ OVERLAY ════════════════════════════════════════════ */
-.sb-overlay{
-  display:none;position:fixed;inset:0;z-index:199;
-  background:rgba(0,0,0,.4);backdrop-filter:blur(2px);
-}
-.sb-overlay.show{display:block}
-
-/* ═══ TOPBAR ══════════════════════════════════════════════ */
+.sb-dot{width:6px;height:6px;border-radius:50%;background:var(--txt3);flex-shrink:0;animation:pulse 2s infinite}
+.sb-dot.ok{background:#4ecb8d}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+/* ── MAIN ────────────────────────────────── */
+.main{flex:1;height:100vh;overflow-y:auto;position:relative;z-index:5}
+.content{max-width:900px;margin:0 auto;padding:28px 32px 80px}
+/* ── TOPBAR ──────────────────────────────── */
 .topbar{
-  position:fixed;top:0;left:0;right:0;height:56px;z-index:100;
-  background:var(--card);backdrop-filter:blur(18px);
-  border-bottom:1px solid var(--brd);
-  display:flex;align-items:center;padding:0 20px;gap:14px;
-  box-shadow:var(--sh);
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:24px;
 }
-.hamburger{
-  background:none;border:none;cursor:pointer;
-  display:flex;flex-direction:column;gap:4px;padding:4px;
+.page-title{font-size:1.1rem;font-weight:600;color:var(--txt)}
+.topbar-actions{display:flex;gap:6px;align-items:center}
+.icon-btn{
+  width:32px;height:32px;border-radius:var(--rs);border:1px solid var(--brd);
+  background:var(--sur);color:var(--txt2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .18s;
 }
-.hamburger span{
-  display:block;width:20px;height:2px;
-  background:var(--txt);border-radius:2px;
-  transition:all .25s;
+.icon-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.icon-btn:hover{border-color:var(--ac1);color:var(--ac1)}
+/* ── CARDS ───────────────────────────────── */
+.card{background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:20px}
+.card+.card{margin-top:12px}
+.card-title{font-size:.65rem;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px}
+/* ── STAT GRID ───────────────────────────── */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.stat{
+  background:var(--card);border:1px solid var(--brd);border-radius:var(--r);
+  padding:16px 18px;cursor:default;transition:border-color .2s;
 }
-.tb-title{font-size:.95rem;font-weight:600;flex:1}
-.tb-actions{display:flex;gap:6px;align-items:center}
-.tb-btn{
-  width:34px;height:34px;border-radius:50%;border:1px solid var(--brd);
-  background:var(--sur2);color:var(--txt);font-size:.9rem;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:all .2s;
-}
-.tb-btn:hover{border-color:var(--ac1);background:rgba(126,200,247,.12)}
-
-/* ═══ MAIN CONTENT ═══════════════════════════════════════ */
-.main{flex:1;padding-top:56px;min-height:100vh;position:relative;z-index:10}
-.page{display:none;padding:24px 24px 80px;max-width:1080px;margin:0 auto}
-.page.active{display:block}
-
-/* ═══ PERIOD PICKER ══════════════════════════════════════ */
-.period-row{
-  display:flex;gap:6px;margin-bottom:20px;align-items:center;flex-wrap:wrap;
-}
-.period-tabs{display:flex;background:var(--sur);border:1px solid var(--brd);border-radius:8px;padding:3px;gap:2px}
+.stat:hover{border-color:var(--brd2,var(--txt3))}
+.stat-lbl{font-size:.62rem;font-weight:500;color:var(--txt2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.stat-val{font-size:1.45rem;font-weight:700;line-height:1;margin-bottom:3px}
+.stat-sub{font-size:.68rem;color:var(--txt2)}
+.stat.net .stat-val{color:var(--ac1)}
+.stat.inc .stat-val{color:#4ecb8d}
+.stat.exp .stat-val{color:var(--ac2)}
+/* ── PERIOD SELECTOR ─────────────────────── */
+.period-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.period-tabs{display:flex;background:var(--sur2);border-radius:var(--rs);padding:3px;gap:2px;border:1px solid var(--brd)}
 .pt{
-  padding:5px 14px;border-radius:6px;border:none;
+  padding:4px 12px;border-radius:6px;border:none;
   background:transparent;color:var(--txt2);
-  font-family:'Prompt',sans-serif;font-size:.8rem;
-  cursor:pointer;transition:all .2s;
+  font-family:'Prompt',sans-serif;font-size:.72rem;
+  cursor:pointer;transition:all .18s;
 }
-.pt.active{background:var(--ac1);color:#fff;font-weight:500}
-.period-nav{display:flex;gap:4px;align-items:center}
+.pt.active{background:var(--sur);color:var(--txt);font-weight:500;box-shadow:var(--sh)}
 .pnav{
-  width:28px;height:28px;border-radius:6px;border:1px solid var(--brd);
-  background:var(--sur);color:var(--txt2);font-size:.8rem;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:all .2s;
+  width:26px;height:26px;border-radius:6px;border:1px solid var(--brd);
+  background:var(--sur);color:var(--txt2);font-size:.75rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .18s;
 }
 .pnav:hover{border-color:var(--ac1);color:var(--ac1)}
-.period-label{font-size:.85rem;font-weight:500;color:var(--txt);min-width:90px;text-align:center}
-
-/* ═══ SUMMARY CARDS ══════════════════════════════════════ */
-.s-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
-.sc{
-  background:var(--card);backdrop-filter:blur(12px);
-  border:1px solid var(--brd);border-radius:var(--r);
-  padding:18px 20px;position:relative;overflow:hidden;
-  transition:transform .2s,box-shadow .2s;cursor:default;
+.period-lbl{font-size:.78rem;font-weight:500;color:var(--txt);min-width:80px;text-align:center}
+/* ── GOAL BAR ────────────────────────────── */
+.goal-wrap{margin-bottom:12px}
+.goal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.goal-lbl{font-size:.62rem;font-weight:500;color:var(--txt2);text-transform:uppercase;letter-spacing:.7px}
+.goal-meta{font-size:.68rem;color:var(--txt2)}
+.goal-track{height:4px;background:var(--sur2);border-radius:99px;overflow:hidden;border:1px solid var(--brd)}
+.goal-fill{height:100%;border-radius:99px;background:var(--ac1);transition:width .5s cubic-bezier(.4,0,.2,1)}
+.goal-fill.warn{background:var(--ac3)}
+.goal-fill.over{background:var(--ac2)}
+.goal-btn{
+  background:none;border:none;color:var(--txt2);font-family:'Prompt',sans-serif;
+  font-size:.68rem;cursor:pointer;transition:color .18s;
 }
-.sc:hover{transform:translateY(-2px);box-shadow:var(--sh)}
-.sc::after{
-  content:'';position:absolute;inset:0;
-  border-radius:var(--r);opacity:0;
-  transition:opacity .2s;
-  background:linear-gradient(135deg,rgba(126,200,247,.05),rgba(247,168,208,.05));
-}
-.sc:hover::after{opacity:1}
-.sc-accent{position:absolute;top:0;left:0;right:0;height:2.5px;border-radius:var(--r) var(--r) 0 0}
-.sc.net .sc-accent{background:linear-gradient(90deg,var(--ac1),var(--ac2))}
-.sc.inc .sc-accent{background:var(--ac1)}
-.sc.exp .sc-accent{background:var(--ac2)}
-.sc-lbl{font-size:.7rem;font-weight:500;color:var(--txt2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
-.sc-amt{font-size:1.65rem;font-weight:700;line-height:1;margin-bottom:4px}
-.sc.net .sc-amt{color:var(--ac1)}
-.sc.inc .sc-amt{color:#6ed9ae}
-.sc.exp .sc-amt{color:var(--ac2)}
-.sc-sub{font-size:.72rem;color:var(--txt2)}
-
-/* ═══ BANNER ══════════════════════════════════════════════ */
-.banner{
-  display:flex;align-items:center;gap:10px;
-  background:var(--sur);border:1px solid var(--brd);
-  border-radius:var(--rs);padding:10px 14px;
-  margin-bottom:18px;font-size:.8rem;color:var(--txt2);
-}
-.banner.ok{border-color:rgba(110,217,174,.3);color:#6ed9ae}
-.bdot{width:6px;height:6px;border-radius:50%;background:var(--ac3);flex-shrink:0;animation:bk 2s infinite}
-.banner.ok .bdot{background:#6ed9ae}
-@keyframes bk{0%,100%{opacity:1}50%{opacity:.2}}
-.b-setup{
-  margin-left:auto;padding:4px 12px;border-radius:6px;
-  border:1px solid var(--brd2);background:transparent;
-  color:var(--ac1);font-family:'Prompt',sans-serif;font-size:.75rem;cursor:pointer;
-  transition:all .2s;
-}
-.b-setup:hover{background:rgba(126,200,247,.1)}
-
-/* ═══ GOAL CARD ═══════════════════════════════════════════ */
-.goal-card{
-  background:var(--card);border:1px solid var(--brd);
-  border-radius:var(--r);padding:16px 20px;margin-bottom:18px;
-}
-.goal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.goal-hd-lbl{font-size:.72rem;font-weight:500;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
-.goal-hd-btn{
-  background:none;border:1px solid var(--brd);border-radius:6px;
-  color:var(--txt2);font-family:'Prompt',sans-serif;font-size:.72rem;
-  padding:3px 10px;cursor:pointer;transition:all .2s;
-}
-.goal-hd-btn:hover{border-color:var(--ac3);color:var(--ac3)}
-.goal-bar-bg{height:8px;background:var(--sur2);border-radius:99px;overflow:hidden;margin-bottom:7px}
-.goal-bar-fill{height:100%;border-radius:99px;transition:width .6s cubic-bezier(.4,0,.2,1);background:var(--ac1)}
-.goal-bar-fill.warn{background:var(--ac3)}
-.goal-bar-fill.over{background:var(--ac2)}
-.goal-ft{display:flex;justify-content:space-between;font-size:.72rem;color:var(--txt2)}
-
-/* ═══ CHARTS ══════════════════════════════════════════════ */
-.charts-grid{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:18px}
-.chart-card{
-  background:var(--card);border:1px solid var(--brd);
-  border-radius:var(--r);padding:18px 20px;
-}
-.cc-title{
-  font-size:.7rem;font-weight:600;color:var(--txt2);
-  text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;
-}
-
-/* ═══ BREAKDOWN ════════════════════════════════════════════ */
-.bd-card{
-  background:var(--card);border:1px solid var(--brd);
-  border-radius:var(--r);padding:18px 20px;margin-bottom:14px;
-}
-.bd-title{
-  font-size:.7rem;font-weight:600;color:var(--txt2);
-  text-transform:uppercase;letter-spacing:.5px;
-  margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;
-}
+.goal-btn:hover{color:var(--ac3)}
+/* ── CHARTS ──────────────────────────────── */
+.chart-row{display:grid;grid-template-columns:3fr 2fr;gap:10px;margin-bottom:12px}
+/* ── BREAKDOWN ───────────────────────────── */
 .bd-row{
-  display:flex;align-items:center;gap:10px;
-  padding:8px 0;border-bottom:1px solid var(--brd);
+  display:flex;align-items:center;gap:8px;
+  padding:7px 0;border-bottom:1px solid var(--brd);
 }
 .bd-row:last-child{border-bottom:none}
-.bd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.bd-name{flex:1;font-size:.85rem}
-.bd-bar-w{width:90px;height:4px;background:var(--sur2);border-radius:99px;overflow:hidden}
-.bd-bar{height:100%;border-radius:99px;transition:width .5s}
-.bd-pct{font-size:.68rem;color:var(--txt2);min-width:28px;text-align:right}
-.bd-cnt{font-size:.68rem;color:var(--txt2);min-width:44px;text-align:right}
-.bd-amt{font-size:.84rem;font-weight:600;min-width:80px;text-align:right}
-
-/* ═══ FORM ════════════════════════════════════════════════ */
-.fc{
-  background:var(--card);border:1px solid var(--brd);
-  border-radius:var(--r);padding:24px;margin-bottom:18px;
+.bd-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.bd-name{flex:1;font-size:.78rem;color:var(--txt)}
+.bd-bar-w{width:80px;height:3px;background:var(--sur2);border-radius:99px;overflow:hidden}
+.bd-bar{height:100%;border-radius:99px;transition:width .4s}
+.bd-pct{font-size:.65rem;color:var(--txt2);min-width:26px;text-align:right}
+.bd-cnt{font-size:.65rem;color:var(--txt2);min-width:40px;text-align:right}
+.bd-amt{font-size:.78rem;font-weight:600;min-width:74px;text-align:right}
+/* ── TOP5 ────────────────────────────────── */
+.top5-row{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 0;border-bottom:1px solid var(--brd);
 }
-.fc-title{font-size:.95rem;font-weight:600;margin-bottom:18px;color:var(--txt)}
-.type-tgl{display:flex;gap:6px;margin-bottom:18px}
+.top5-row:last-child{border-bottom:none}
+.top5-rank{font-size:.6rem;font-weight:600;color:var(--txt3);width:16px;text-align:center}
+.top5-info{flex:1}
+.top5-desc{font-size:.78rem;color:var(--txt)}
+.top5-meta{font-size:.65rem;color:var(--txt2)}
+.top5-amt{font-size:.78rem;font-weight:600;color:var(--ac2)}
+/* ── RECURRING BADGE ─────────────────────── */
+.rec-badge{
+  font-size:.55rem;font-weight:600;padding:1px 5px;border-radius:4px;
+  background:rgba(255,232,138,.15);color:var(--ac3);border:1px solid rgba(255,232,138,.25);
+  margin-left:4px;vertical-align:middle;
+}
+/* ── FORM ────────────────────────────────── */
+.type-tgl{display:flex;gap:6px;margin-bottom:16px}
 .tt{
-  flex:1;padding:9px;border-radius:var(--rs);
-  border:1.5px solid var(--brd);background:transparent;
-  font-family:'Prompt',sans-serif;font-size:.88rem;
-  font-weight:500;cursor:pointer;color:var(--txt2);transition:all .2s;
+  flex:1;padding:8px;border-radius:var(--rs);
+  border:1px solid var(--brd);background:transparent;
+  font-family:'Prompt',sans-serif;font-size:.8rem;
+  font-weight:500;cursor:pointer;color:var(--txt2);transition:all .18s;
 }
-.tt.inc.active{border-color:#6ed9ae;background:rgba(110,217,174,.1);color:#6ed9ae}
-.tt.exp.active{border-color:var(--ac2);background:rgba(247,168,208,.1);color:var(--ac2)}
-.fg{display:flex;flex-direction:column;gap:5px}
-.fg label{font-size:.68rem;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
+.tt.inc.active{border-color:#4ecb8d;background:rgba(78,203,141,.08);color:#4ecb8d}
+.tt.exp.active{border-color:var(--ac2);background:rgba(247,168,208,.08);color:var(--ac2)}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:.6rem;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.6px}
 input[type=text],input[type=number],input[type=date],input[type=url],select,textarea{
-  background:var(--sur2);border:1px solid var(--brd);
-  border-radius:var(--rs);color:var(--txt);
-  font-family:'Prompt',sans-serif;font-size:.88rem;
-  padding:9px 12px;outline:none;transition:border-color .2s;width:100%;
+  background:var(--sur2);border:1px solid var(--brd);border-radius:var(--rs);
+  color:var(--txt);font-family:'Prompt',sans-serif;font-size:.82rem;
+  padding:8px 11px;outline:none;transition:border-color .18s;width:100%;
 }
 input:focus,select:focus,textarea:focus{border-color:var(--ac1)}
+input::placeholder,textarea::placeholder{color:var(--txt3)}
 select option{background:var(--bg2)}
-textarea{resize:vertical;min-height:56px}
+textarea{resize:vertical;min-height:52px}
+.f-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .fg.full{grid-column:1/-1}
-.f-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-
-/* slip upload */
-.slip-toggle{
-  display:flex;align-items:center;gap:8px;margin-bottom:12px;
-  font-size:.78rem;color:var(--txt2);cursor:pointer;user-select:none;
+.primary-btn{
+  width:100%;padding:10px;border-radius:var(--rs);border:none;
+  background:var(--ac1);color:#0c0e16;
+  font-family:'Prompt',sans-serif;font-size:.85rem;font-weight:600;
+  cursor:pointer;transition:all .18s;margin-top:4px;
 }
-.toggle-sw{
-  width:32px;height:18px;background:var(--brd);border-radius:99px;
-  position:relative;transition:background .2s;flex-shrink:0;
+.primary-btn:hover{opacity:.88;transform:translateY(-1px)}
+/* ── SLIP ────────────────────────────────── */
+.slip-toggle-row{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 0;border-top:1px solid var(--brd);
+  margin-top:8px;cursor:pointer;
 }
-.toggle-sw::after{
-  content:'';position:absolute;top:2px;left:2px;
-  width:14px;height:14px;border-radius:50%;
-  background:#fff;transition:transform .2s;
+.sw{width:30px;height:16px;border-radius:99px;background:var(--brd);position:relative;flex-shrink:0;transition:background .18s}
+.sw::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:transform .18s}
+.sw.on{background:var(--ac1)}
+.sw.on::after{transform:translateX(14px)}
+.slip-toggle-lbl{font-size:.75rem;color:var(--txt2)}
+.slip-zone{
+  border:1px dashed var(--brd);border-radius:var(--rs);
+  padding:16px;text-align:center;cursor:pointer;
+  transition:all .18s;background:var(--sur2);margin-top:8px;
 }
-.toggle-sw.on{background:var(--ac1)}
-.toggle-sw.on::after{transform:translateX(14px)}
-.slip-area{
-  border:1.5px dashed var(--brd2);border-radius:var(--rs);
-  padding:20px;text-align:center;cursor:pointer;
-  transition:border-color .2s,background .2s;
-  background:var(--sur2);margin-bottom:10px;
+.slip-zone:hover{border-color:var(--ac1);background:rgba(126,200,247,.04)}
+.slip-zone.filled{border-color:var(--ac1);border-style:solid;padding:6px}
+.slip-zone img{max-width:100%;max-height:140px;border-radius:6px;object-fit:contain}
+.slip-hint{font-size:.72rem;color:var(--txt2)}
+.slip-hint span{color:var(--ac1)}
+/* ── RECURRING FORM ──────────────────────── */
+.rec-row{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 0;border-top:1px solid var(--brd);
+  margin-top:0;
 }
-.slip-area:hover{border-color:var(--ac1);background:rgba(126,200,247,.05)}
-.slip-area.has-img{padding:8px;border-style:solid;border-color:var(--ac1)}
-.slip-area img{max-width:100%;max-height:160px;border-radius:8px;object-fit:contain}
-.slip-lbl{font-size:.78rem;color:var(--txt2)}
-.slip-lbl span{color:var(--ac1);font-weight:500}
-
-.submit-btn{
-  width:100%;padding:11px;border-radius:var(--rs);border:none;
-  background:linear-gradient(135deg,var(--ac1),var(--ac2));
-  color:#fff;font-family:'Prompt',sans-serif;font-size:.92rem;
-  font-weight:600;cursor:pointer;transition:all .2s;margin-top:4px;
-}
-.submit-btn:hover{opacity:.88;transform:translateY(-1px)}
-
-/* ═══ LIST PAGE ════════════════════════════════════════════ */
-.lc{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
-.sw{flex:1;min-width:160px;position:relative}
-.sw input{padding-left:30px}
-.sw::before{content:'⌕';position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:1rem;color:var(--txt2);pointer-events:none}
-.fsel{padding:9px 12px;min-width:110px}
+.rec-row label{font-size:.75rem;color:var(--txt2);cursor:pointer;display:flex;align-items:center;gap:6px}
+.rec-row input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(--ac3)}
+/* ── LIST ────────────────────────────────── */
+.list-ctrl{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.search-w{flex:1;min-width:140px;position:relative}
+.search-w input{padding-left:28px}
+.search-w::before{content:'';position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  width:12px;height:12px;border:1.5px solid var(--txt2);border-radius:50%;pointer-events:none}
+.search-w::after{content:'';position:absolute;left:17px;top:52%;
+  width:5px;height:1.5px;background:var(--txt2);transform:rotate(45deg);pointer-events:none}
+.fsel{padding:8px 11px;min-width:100px}
 .exp-btn{
-  padding:8px 14px;border-radius:var(--rs);border:1px solid var(--brd);
-  background:transparent;color:var(--ac3);font-family:'Prompt',sans-serif;
-  font-size:.78rem;cursor:pointer;transition:all .2s;font-weight:500;white-space:nowrap;
+  padding:7px 12px;border-radius:var(--rs);border:1px solid var(--brd);
+  background:transparent;color:var(--txt2);font-family:'Prompt',sans-serif;
+  font-size:.72rem;cursor:pointer;transition:all .18s;white-space:nowrap;font-weight:500;
 }
-.exp-btn:hover{background:rgba(255,232,138,.1);border-color:var(--ac3)}
-.tx-list{display:flex;flex-direction:column;gap:6px}
+.exp-btn:hover{border-color:var(--ac3);color:var(--ac3)}
+/* ── TX ITEM ─────────────────────────────── */
+.tx-list{display:flex;flex-direction:column;gap:5px}
 .txi{
-  background:var(--card);border:1px solid var(--brd);border-radius:12px;
-  padding:11px 16px;display:flex;align-items:center;gap:11px;
-  transition:border-color .2s;animation:fsl .3s ease both;
+  background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);
+  padding:10px 14px;display:flex;align-items:center;gap:10px;
+  transition:border-color .18s;animation:fs .25s ease both;
 }
-@keyframes fsl{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-.txi:hover{border-color:var(--brd2)}
-.txi-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.txi-dot.income{background:#6ed9ae}
-.txi-dot.expense{background:var(--ac2)}
+@keyframes fs{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.txi:hover{border-color:var(--txt3)}
+.txi-bar{width:2px;height:32px;border-radius:2px;flex-shrink:0}
+.txi-bar.income{background:#4ecb8d}
+.txi-bar.expense{background:var(--ac2)}
 .txi-info{flex:1;min-width:0}
-.txi-desc{font-size:.88rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.txi-meta{font-size:.7rem;color:var(--txt2);margin-top:1px}
+.txi-desc{font-size:.82rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.txi-meta{font-size:.65rem;color:var(--txt2);margin-top:1px}
 .txi-badge{
-  font-size:.66rem;padding:2px 8px;border-radius:20px;
+  font-size:.6rem;padding:2px 7px;border-radius:4px;
   background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);white-space:nowrap;
 }
-.txi-slip{
-  width:28px;height:28px;border-radius:6px;overflow:hidden;
+.txi-slip-thumb{
+  width:26px;height:26px;border-radius:5px;overflow:hidden;
   border:1px solid var(--brd);cursor:pointer;flex-shrink:0;
 }
-.txi-slip img{width:100%;height:100%;object-fit:cover}
-.txi-amt{font-size:.9rem;font-weight:600;min-width:80px;text-align:right}
-.txi-amt.income{color:#6ed9ae}
+.txi-slip-thumb img{width:100%;height:100%;object-fit:cover}
+.txi-amt{font-size:.85rem;font-weight:600;min-width:72px;text-align:right}
+.txi-amt.income{color:#4ecb8d}
 .txi-amt.expense{color:var(--ac2)}
 .txi-del{
-  background:none;border:none;color:var(--txt2);cursor:pointer;
-  font-size:.8rem;opacity:0;transition:opacity .2s,color .2s;padding:3px;
+  background:none;border:none;color:var(--txt3);cursor:pointer;
+  font-size:.75rem;opacity:0;transition:opacity .18s,color .18s;padding:3px;
 }
 .txi:hover .txi-del{opacity:1}
 .txi-del:hover{color:var(--ac2)}
-.empty-st{text-align:center;padding:50px 20px;color:var(--txt2)}
-.empty-st .e-ic{font-size:2.2rem;margin-bottom:10px;opacity:.4}
-
-/* ═══ CATS PAGE ════════════════════════════════════════════ */
-.cp{background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:22px;margin-bottom:16px}
-.cp-title{font-size:.88rem;font-weight:600;margin-bottom:14px;color:var(--txt)}
-.cat-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.cg-title{font-size:.65rem;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
-.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.empty-st{text-align:center;padding:48px 20px;color:var(--txt2)}
+.empty-st .ei{font-size:1.8rem;margin-bottom:8px;opacity:.3}
+/* ── CATS PAGE ───────────────────────────── */
+.cat-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cg-lbl{font-size:.6rem;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
 .chip{
-  padding:3px 10px;border-radius:20px;border:1px solid var(--brd);
-  background:var(--sur2);font-size:.75rem;color:var(--txt2);
-  display:flex;align-items:center;gap:3px;
+  padding:3px 9px;border-radius:4px;border:1px solid var(--brd);
+  background:var(--sur2);font-size:.7rem;color:var(--txt2);
+  display:flex;align-items:center;gap:3px;transition:border-color .18s;
 }
-.chip .cd{background:none;border:none;color:var(--txt2);cursor:pointer;font-size:.65rem;padding:0;transition:color .2s}
-.chip .cd:hover{color:var(--ac2)}
-.cat-add{display:flex;gap:6px}
-.cat-add input{flex:1}
+.chip:hover{border-color:var(--txt3)}
+.chip-del{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:.6rem;padding:0;transition:color .18s}
+.chip-del:hover{color:var(--ac2)}
+.cat-add-row{display:flex;gap:5px}
+.cat-add-row input{flex:1}
 .cat-add-btn{
-  padding:8px 12px;border-radius:var(--rs);border:none;
-  background:var(--ac1);color:#fff;font-family:'Prompt',sans-serif;
-  font-size:.78rem;cursor:pointer;transition:opacity .2s;white-space:nowrap;font-weight:500;
+  padding:7px 12px;border-radius:var(--rs);border:none;
+  background:var(--sur2);color:var(--txt);font-family:'Prompt',sans-serif;
+  font-size:.72rem;cursor:pointer;transition:all .18s;border:1px solid var(--brd);white-space:nowrap;
 }
-.cat-add-btn:hover{opacity:.82}
-
-/* ═══ SETTINGS PAGE ══════════════════════════════════════ */
-.sp{background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:22px;margin-bottom:14px}
-.sp-title{font-size:.88rem;font-weight:600;margin-bottom:16px;color:var(--txt)}
-.color-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.color-row label{font-size:.8rem;color:var(--txt2);flex:1}
-.color-row input[type=color]{
-  width:38px;height:28px;padding:2px;border-radius:6px;
-  border:1px solid var(--brd);background:var(--sur2);cursor:pointer;
-}
-.color-presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
-.cp-btn{
-  padding:5px 12px;border-radius:6px;border:1px solid var(--brd);
-  font-family:'Prompt',sans-serif;font-size:.72rem;cursor:pointer;
-  background:var(--sur2);color:var(--txt2);transition:all .2s;
-}
-.cp-btn:hover{border-color:var(--ac1);color:var(--ac1)}
-.reset-color-btn{
-  padding:7px 14px;border-radius:var(--rs);border:1px solid var(--brd);
+.cat-add-btn:hover{border-color:var(--ac1);color:var(--ac1)}
+/* ── SETTINGS ────────────────────────────── */
+.color-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--brd)}
+.color-row:last-child{border-bottom:none}
+.color-row label{flex:1;font-size:.78rem;color:var(--txt2)}
+.color-row input[type=color]{width:36px;height:26px;padding:2px;border-radius:5px;border:1px solid var(--brd);background:var(--sur2);cursor:pointer}
+.preset-btns{display:flex;gap:5px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--brd);margin-bottom:2px}
+.pb{
+  padding:4px 11px;border-radius:4px;border:1px solid var(--brd);
   background:transparent;color:var(--txt2);font-family:'Prompt',sans-serif;
-  font-size:.78rem;cursor:pointer;transition:all .2s;
+  font-size:.68rem;cursor:pointer;transition:all .18s;
 }
-.reset-color-btn:hover{border-color:var(--ac2);color:var(--ac2)}
-
-/* ═══ MODAL ═══════════════════════════════════════════════ */
-.mov{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
-  z-index:9000;align-items:center;justify-content:center;backdrop-filter:blur(4px);
+.pb:hover{border-color:var(--ac1);color:var(--ac1)}
+.sec-btn{
+  display:inline-block;padding:7px 14px;border-radius:var(--rs);
+  border:1px solid var(--brd);background:transparent;color:var(--txt2);
+  font-family:'Prompt',sans-serif;font-size:.75rem;cursor:pointer;
+  transition:all .18s;margin-right:6px;margin-top:6px;
 }
+.sec-btn:hover{border-color:var(--ac1);color:var(--ac1)}
+.sec-btn.danger{color:var(--ac2)}
+.sec-btn.danger:hover{border-color:var(--ac2)}
+/* ── MODAL ───────────────────────────────── */
+.mov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:9000;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
 .mov.open{display:flex}
 .modal{
   background:var(--bg2);border:1px solid var(--brd);border-radius:var(--r);
-  padding:26px;width:90%;max-width:500px;max-height:82vh;overflow-y:auto;
+  padding:24px;width:90%;max-width:480px;max-height:85vh;overflow-y:auto;
 }
-.modal h2{font-size:1rem;font-weight:600;margin-bottom:4px;color:var(--ac1)}
-.modal .msub{font-size:.78rem;color:var(--txt2);margin-bottom:16px}
+.modal-title{font-size:.95rem;font-weight:600;margin-bottom:4px;color:var(--txt)}
+.modal-sub{font-size:.72rem;color:var(--txt2);margin-bottom:16px}
 .step{
-  background:var(--sur);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;
-  border-left:2.5px solid var(--ac1);font-size:.82rem;line-height:1.65;
+  background:var(--sur);border-radius:var(--rs);padding:11px 13px;
+  margin-bottom:7px;border-left:2px solid var(--ac1);font-size:.78rem;line-height:1.6;
 }
 .step strong{color:var(--ac3)}
 .step code{
-  display:block;margin-top:7px;padding:8px;background:var(--bg);
-  border-radius:8px;font-family:monospace;font-size:.75rem;color:#6ed9ae;
+  display:block;margin-top:6px;padding:8px;background:var(--bg);
+  border-radius:6px;font-family:monospace;font-size:.7rem;color:#4ecb8d;
   white-space:pre-wrap;word-break:break-all;border:1px solid var(--brd);
 }
-.url-row{display:flex;gap:7px;margin-top:14px}
+.url-row{display:flex;gap:6px;margin-top:12px}
 .url-row input{flex:1}
 .sv-btn{
-  padding:9px 14px;border-radius:var(--rs);border:none;
-  background:var(--ac1);color:#fff;font-family:'Prompt',sans-serif;
-  font-size:.82rem;cursor:pointer;white-space:nowrap;font-weight:500;
+  padding:8px 14px;border-radius:var(--rs);border:none;
+  background:var(--ac1);color:#0c0e16;font-family:'Prompt',sans-serif;
+  font-size:.78rem;cursor:pointer;white-space:nowrap;font-weight:600;
 }
 .cl-btn{
-  width:100%;margin-top:10px;padding:9px;background:transparent;
+  width:100%;margin-top:8px;padding:8px;background:transparent;
   border:1px solid var(--brd);border-radius:var(--rs);
-  color:var(--txt2);font-family:'Prompt',sans-serif;cursor:pointer;
+  color:var(--txt2);font-family:'Prompt',sans-serif;font-size:.75rem;cursor:pointer;
+  transition:all .18s;
 }
-/* slip preview modal */
-.slip-preview img{max-width:100%;border-radius:10px}
-
-/* ═══ TOAST ═══════════════════════════════════════════════ */
+.cl-btn:hover{border-color:var(--txt3)}
+/* ── TOAST ───────────────────────────────── */
 #toast{
-  position:fixed;bottom:22px;right:22px;z-index:9999;
-  background:var(--sur);border:1px solid var(--brd);
-  border-radius:var(--rs);padding:10px 16px;font-size:.82rem;
-  transform:translateY(14px);opacity:0;transition:all .28s;pointer-events:none;
+  position:fixed;bottom:20px;right:20px;z-index:9999;
+  background:var(--sur);border:1px solid var(--brd);border-radius:var(--rs);
+  padding:9px 14px;font-size:.75rem;
+  transform:translateY(10px);opacity:0;transition:all .25s;pointer-events:none;
 }
 #toast.show{transform:none;opacity:1}
-#toast.ok{border-color:#6ed9ae;color:#6ed9ae}
+#toast.ok{border-color:#4ecb8d;color:#4ecb8d}
 #toast.er{border-color:var(--ac2);color:var(--ac2)}
 #toast.in{border-color:var(--ac1);color:var(--ac1)}
-
-/* ═══ RESPONSIVE ══════════════════════════════════════════ */
+/* ── PAGES ───────────────────────────────── */
+.page{display:none}
+.page.active{display:block}
+/* ── RESPONSIVE ──────────────────────────── */
 @media(max-width:680px){
-  .page{padding:16px 14px 72px}
-  .s-grid{grid-template-columns:1fr}
-  .charts-grid{grid-template-columns:1fr}
+  .sb{position:fixed;top:0;left:0;height:100vh;transform:translateX(-100%);transition:transform .28s;z-index:200}
+  .sb.open{transform:translateX(0)}
+  .sb-overlay{display:none;position:fixed;inset:0;z-index:199;background:rgba(0,0,0,.4)}
+  .sb-overlay.show{display:block}
+  .main{width:100vw}
+  .content{padding:16px 14px 80px}
+  .stat-grid{grid-template-columns:1fr}
+  .chart-row{grid-template-columns:1fr}
   .f-grid{grid-template-columns:1fr}
   .fg.full{grid-column:1}
   .cat-cols{grid-template-columns:1fr}
+  .mob-menu-btn{display:flex}
 }
+.mob-menu-btn{display:none;width:32px;height:32px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--sur);color:var(--txt2);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0}
+.mob-menu-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
 </style>
 </head>
 <body>
-
 <canvas id="sf"></canvas>
-
-<!-- SIDEBAR OVERLAY -->
-<div class="sb-overlay" id="sb-overlay" onclick="closeSb()"></div>
+<div class="sb-overlay" id="sbo" onclick="closeSb()"></div>
 
 <!-- SIDEBAR -->
 <aside class="sb" id="sb">
-  <div class="sb-head">
-    <span class="sb-logo">Budget</span>
-    <button class="sb-close" onclick="closeSb()">✕</button>
-  </div>
+  <div class="sb-logo"><span></span>Budget</div>
   <nav class="sb-nav">
-    <div class="sb-section">เมนูหลัก</div>
-    <button class="sb-item active" id="sbi-summary" onclick="goPage('summary',this)">
-      <span class="ic">▣</span> สรุปผล
+    <div class="sb-label">Overview</div>
+    <button class="sb-btn active" id="sbi-dashboard" onclick="go('dashboard',this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
     </button>
-    <button class="sb-item" id="sbi-add" onclick="goPage('add',this)">
-      <span class="ic">＋</span> บันทึกรายการ
-    </button>
-    <button class="sb-item" id="sbi-list" onclick="goPage('list',this)">
-      <span class="ic">≡</span> ดูรายการ
+    <button class="sb-btn" id="sbi-list" onclick="go('list',this)">
+      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      รายการ
     </button>
     <div class="sb-sep"></div>
-    <div class="sb-section">ตั้งค่า</div>
-    <button class="sb-item" id="sbi-cats" onclick="goPage('cats',this)">
-      <span class="ic">◈</span> หมวดหมู่
+    <div class="sb-label">Manage</div>
+    <button class="sb-btn" id="sbi-add" onclick="go('add',this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      บันทึกรายการ
     </button>
-    <button class="sb-item" id="sbi-settings" onclick="goPage('settings',this)">
-      <span class="ic">⚙</span> ตั้งค่า
+    <button class="sb-btn" id="sbi-cats" onclick="go('cats',this)">
+      <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      หมวดหมู่
+    </button>
+    <div class="sb-sep"></div>
+    <div class="sb-label">System</div>
+    <button class="sb-btn" id="sbi-settings" onclick="go('settings',this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      ตั้งค่า
     </button>
   </nav>
   <div class="sb-foot">
-    <button class="sb-item" onclick="toggleTheme()" style="width:100%">
-      <span class="ic" id="theme-ic">☀</span> <span id="theme-lbl">โหมดสว่าง</span>
+    <div class="sb-status">
+      <div class="sb-dot" id="sb-dot"></div>
+      <span id="sb-status-txt" style="font-size:.68rem">Local only</span>
+    </div>
+    <button class="sb-btn" onclick="toggleTheme()" style="margin-bottom:2px">
+      <svg id="theme-ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <span id="theme-lbl">Light mode</span>
+    </button>
+    <button class="sb-btn" onclick="openSheetsModal()">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Google Sheets
     </button>
   </div>
 </aside>
 
-<!-- TOPBAR -->
-<div class="topbar">
-  <button class="hamburger" onclick="openSb()" aria-label="เมนู">
-    <span></span><span></span><span></span>
-  </button>
-  <span class="tb-title" id="tb-title">สรุปผล</span>
-  <div class="tb-actions">
-    <button class="tb-btn" onclick="openSheets()" title="Google Sheets">⊞</button>
-  </div>
-</div>
-
 <!-- MAIN -->
-<main class="main">
+<main class="main" id="main">
+<div class="content">
 
-<!-- PAGE: SUMMARY ══════════════════════════════════════ -->
-<div class="page active" id="page-summary">
-  <div class="banner" id="cfg-banner">
-    <div class="bdot"></div>
-    <span id="cfg-text">ยังไม่เชื่อม Google Sheets</span>
-    <button class="b-setup" onclick="openSheets()">ตั้งค่า</button>
-  </div>
-
-  <!-- Period picker -->
-  <div class="period-row">
-    <div class="period-tabs">
-      <button class="pt active" data-p="day" onclick="setPeriod('day',this)">วัน</button>
-      <button class="pt" data-p="month" onclick="setPeriod('month',this)">เดือน</button>
-      <button class="pt" data-p="year" onclick="setPeriod('year',this)">ปี</button>
-      <button class="pt" data-p="all" onclick="setPeriod('all',this)">ทั้งหมด</button>
+<!-- ── DASHBOARD ───────────────────────────── -->
+<div class="page active" id="page-dashboard">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="mob-menu-btn" onclick="openSb()">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="page-title">Dashboard</div>
     </div>
-    <div class="period-nav">
-      <button class="pnav" onclick="shiftPeriod(-1)">‹</button>
-      <span class="period-label" id="period-label">—</span>
-      <button class="pnav" onclick="shiftPeriod(1)">›</button>
-    </div>
-  </div>
-
-  <div class="s-grid">
-    <div class="sc net">
-      <div class="sc-accent"></div>
-      <div class="sc-lbl">ยอดคงเหลือ</div>
-      <div class="sc-amt" id="s-net">฿0</div>
-      <div class="sc-sub" id="s-net-sub">—</div>
-    </div>
-    <div class="sc inc">
-      <div class="sc-accent"></div>
-      <div class="sc-lbl">รายรับ</div>
-      <div class="sc-amt" id="s-inc">฿0</div>
-      <div class="sc-sub" id="s-inc-sub">0 รายการ</div>
-    </div>
-    <div class="sc exp">
-      <div class="sc-accent"></div>
-      <div class="sc-lbl">รายจ่าย</div>
-      <div class="sc-amt" id="s-exp">฿0</div>
-      <div class="sc-sub" id="s-exp-sub">0 รายการ</div>
-    </div>
-  </div>
-
-  <div class="goal-card">
-    <div class="goal-hd">
-      <div class="goal-hd-lbl">งบประมาณเดือนนี้</div>
-      <button class="goal-hd-btn" onclick="openGoalModal()">แก้ไข</button>
-    </div>
-    <div class="goal-bar-bg"><div class="goal-bar-fill" id="goal-bar" style="width:0%"></div></div>
-    <div class="goal-ft"><span id="goal-left">ยังไม่ได้ตั้งงบ</span><span id="goal-pct">—</span></div>
-  </div>
-
-  <div class="charts-grid">
-    <div class="chart-card">
-      <div class="cc-title">รายรับ / รายจ่าย รายเดือน</div>
-      <canvas id="barChart" height="210"></canvas>
-    </div>
-    <div class="chart-card">
-      <div class="cc-title">สัดส่วนรายจ่าย</div>
-      <canvas id="donutChart" height="210"></canvas>
-    </div>
-  </div>
-  <div class="chart-card" style="margin-bottom:18px">
-    <div class="cc-title">เทรนด์ยอดสะสม</div>
-    <canvas id="lineChart" height="140"></canvas>
-  </div>
-
-  <div class="bd-card">
-    <div class="bd-title">
-      <span>รายจ่ายแยกหมวด</span>
-      <span id="bd-exp-total" style="font-size:.8rem;color:var(--ac2);font-weight:600"></span>
-    </div>
-    <div id="bd-exp"></div>
-  </div>
-  <div class="bd-card">
-    <div class="bd-title">
-      <span>รายรับแยกหมวด</span>
-      <span id="bd-inc-total" style="font-size:.8rem;color:#6ed9ae;font-weight:600"></span>
-    </div>
-    <div id="bd-inc"></div>
-  </div>
-</div>
-
-<!-- PAGE: ADD ═══════════════════════════════════════════ -->
-<div class="page" id="page-add">
-  <div class="fc">
-    <div class="fc-title">บันทึกรายการ</div>
-    <div class="type-tgl">
-      <button class="tt inc active" id="btn-inc" onclick="setType('income')">+ รายรับ</button>
-      <button class="tt exp" id="btn-exp" onclick="setType('expense')">− รายจ่าย</button>
-    </div>
-    <div class="f-grid">
-      <div class="fg">
-        <label>จำนวนเงิน (฿)</label>
-        <input type="number" id="f-amount" placeholder="0.00" min="0" step="0.01">
-      </div>
-      <div class="fg">
-        <label>วันที่</label>
-        <input type="date" id="f-date">
-      </div>
-      <div class="fg">
-        <label>หมวดหมู่</label>
-        <select id="f-category"></select>
-      </div>
-      <div class="fg">
-        <label>รายละเอียด</label>
-        <input type="text" id="f-desc" placeholder="เช่น ข้าวมันไก่">
-      </div>
-      <div class="fg full">
-        <label>หมายเหตุ</label>
-        <textarea id="f-note" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
-      </div>
-    </div>
-
-    <!-- SLIP UPLOAD -->
-    <div class="slip-toggle" onclick="toggleSlip()">
-      <div class="toggle-sw" id="slip-sw"></div>
-      <span>แนบรูปสลิป</span>
-    </div>
-    <div id="slip-area-wrap" style="display:none">
-      <div class="slip-area" id="slip-drop" onclick="document.getElementById('slip-file').click()">
-        <div id="slip-preview-wrap">
-          <div class="slip-lbl">คลิกหรือลากรูปสลิปมาวางที่นี่<br><span>รองรับ JPG, PNG</span></div>
+    <div class="topbar-actions">
+      <div class="period-bar" style="margin:0">
+        <div class="period-tabs">
+          <button class="pt active" onclick="setPeriod('day',this)">วัน</button>
+          <button class="pt" onclick="setPeriod('month',this)">เดือน</button>
+          <button class="pt" onclick="setPeriod('year',this)">ปี</button>
+          <button class="pt" onclick="setPeriod('all',this)">ทั้งหมด</button>
         </div>
-      </div>
-      <input type="file" id="slip-file" accept="image/*" style="display:none" onchange="handleSlip(event)">
-      <div style="font-size:.7rem;color:var(--txt2);margin-top:4px">
-        * รูปจะถูกบันทึกเป็น Base64 ใน Sheets (ต้องเชื่อม Sheets ก่อน)
+        <button class="pnav" onclick="shiftP(-1)">‹</button>
+        <span class="period-lbl" id="plbl">—</span>
+        <button class="pnav" onclick="shiftP(1)">›</button>
       </div>
     </div>
+  </div>
 
-    <button class="submit-btn" onclick="addTx()">บันทึกรายการ</button>
+  <div class="stat-grid">
+    <div class="stat net"><div class="stat-lbl">ยอดคงเหลือ</div><div class="stat-val" id="s-net">฿0</div><div class="stat-sub" id="s-net-sub">—</div></div>
+    <div class="stat inc"><div class="stat-lbl">รายรับ</div><div class="stat-val" id="s-inc">฿0</div><div class="stat-sub" id="s-inc-s">0 รายการ</div></div>
+    <div class="stat exp"><div class="stat-lbl">รายจ่าย</div><div class="stat-val" id="s-exp">฿0</div><div class="stat-sub" id="s-exp-s">0 รายการ</div></div>
+  </div>
+
+  <div class="card goal-wrap">
+    <div class="goal-header">
+      <span class="goal-lbl">งบประมาณเดือนนี้</span>
+      <span id="goal-meta" class="goal-meta">—</span>
+      <button class="goal-btn" onclick="openGoalModal()">แก้ไข</button>
+    </div>
+    <div class="goal-track"><div class="goal-fill" id="gfill" style="width:0%"></div></div>
+  </div>
+
+  <div class="chart-row">
+    <div class="card"><div class="card-title">รายรับ / รายจ่าย รายเดือน</div><canvas id="barChart" height="200"></canvas></div>
+    <div class="card"><div class="card-title">สัดส่วนรายจ่าย</div><canvas id="donutChart" height="200"></canvas></div>
+  </div>
+  <div class="card" style="margin-bottom:12px"><div class="card-title">เทรนด์สะสม</div><canvas id="lineChart" height="120"></canvas></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+    <div class="card">
+      <div class="card-title">รายจ่ายแยกหมวด</div>
+      <div id="bd-exp"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">รายรับแยกหมวด</div>
+      <div id="bd-inc"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Top 5 รายจ่ายสูงสุด</div>
+    <div id="top5"></div>
   </div>
 </div>
 
-<!-- PAGE: LIST ══════════════════════════════════════════ -->
+<!-- ── LIST ─────────────────────────────────── -->
 <div class="page" id="page-list">
-  <div class="lc">
-    <div class="sw">
-      <input type="text" id="search-in" placeholder="ค้นหา..." oninput="renderList()">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="mob-menu-btn" onclick="openSb()"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="page-title">รายการทั้งหมด</div>
     </div>
+  </div>
+  <div class="list-ctrl">
+    <div class="search-w"><input type="text" id="s-in" placeholder="ค้นหา..." oninput="renderList()"></div>
     <select class="fsel" id="fl-type" onchange="renderList()">
       <option value="">ทุกประเภท</option>
       <option value="income">รายรับ</option>
       <option value="expense">รายจ่าย</option>
     </select>
-    <select class="fsel" id="fl-cat" onchange="renderList()">
-      <option value="">ทุกหมวด</option>
-    </select>
-    <select class="fsel" id="fl-month" onchange="renderList()">
-      <option value="">ทุกเดือน</option>
-    </select>
-    <button class="exp-btn" onclick="exportCSV()">↓ CSV</button>
+    <select class="fsel" id="fl-cat" onchange="renderList()"><option value="">ทุกหมวด</option></select>
+    <select class="fsel" id="fl-mo" onchange="renderList()"><option value="">ทุกเดือน</option></select>
+    <button class="exp-btn" onclick="exportCSV()">Export CSV</button>
   </div>
   <div class="tx-list" id="tx-list"></div>
 </div>
 
-<!-- PAGE: CATS ══════════════════════════════════════════ -->
+<!-- ── ADD ──────────────────────────────────── -->
+<div class="page" id="page-add">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="mob-menu-btn" onclick="openSb()"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="page-title">บันทึกรายการ</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="type-tgl">
+      <button class="tt inc active" id="btn-inc" onclick="setType('income')">+ รายรับ</button>
+      <button class="tt exp" id="btn-exp" onclick="setType('expense')">− รายจ่าย</button>
+    </div>
+    <div class="f-grid">
+      <div class="fg"><label>จำนวนเงิน (฿)</label><input type="number" id="f-amt" placeholder="0.00" min="0" step="0.01"></div>
+      <div class="fg"><label>วันที่</label><input type="date" id="f-date"></div>
+      <div class="fg"><label>หมวดหมู่</label><select id="f-cat"></select></div>
+      <div class="fg"><label>รายละเอียด</label><input type="text" id="f-desc" placeholder="เช่น ข้าวมันไก่"></div>
+      <div class="fg full"><label>หมายเหตุ / แท็ก</label><textarea id="f-note" placeholder="ใส่ #แท็ก ได้เลย เช่น #ด่วน #ที่ทำงาน"></textarea></div>
+    </div>
+    <div class="rec-row">
+      <label><input type="checkbox" id="f-rec"> รายการประจำ (recurring)<span class="rec-badge">AUTO</span></label>
+    </div>
+    <div id="rec-freq-wrap" style="display:none;padding:8px 0;border-bottom:1px solid var(--brd)">
+      <div class="fg" style="max-width:200px">
+        <label>ความถี่</label>
+        <select id="f-freq">
+          <option value="monthly">ทุกเดือน</option>
+          <option value="weekly">ทุกสัปดาห์</option>
+          <option value="yearly">ทุกปี</option>
+        </select>
+      </div>
+    </div>
+    <div class="slip-toggle-row" onclick="toggleSlip()">
+      <div class="sw" id="slip-sw"></div>
+      <span class="slip-toggle-lbl">แนบรูปสลิป</span>
+      <span style="font-size:.65rem;color:var(--txt3);margin-left:auto">เก็บใน Google Sheets</span>
+    </div>
+    <div id="slip-wrap" style="display:none">
+      <div class="slip-zone" id="slip-zone" onclick="document.getElementById('slip-file').click()">
+        <div id="slip-inner"><div class="slip-hint">คลิกหรือลากรูปสลิปมาวางที่นี่<br><span>JPG, PNG (max 2MB)</span></div></div>
+      </div>
+      <input type="file" id="slip-file" accept="image/*" style="display:none" onchange="handleSlip(event)">
+    </div>
+    <button class="primary-btn" onclick="addTx()">บันทึก</button>
+  </div>
+
+  <!-- RECURRING LIST -->
+  <div class="card" style="margin-top:12px">
+    <div class="card-title">รายการประจำที่ตั้งไว้</div>
+    <div id="rec-list"></div>
+  </div>
+</div>
+
+<!-- ── CATS ──────────────────────────────────── -->
 <div class="page" id="page-cats">
-  <div class="cp">
-    <div class="cp-title">จัดการหมวดหมู่</div>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="mob-menu-btn" onclick="openSb()"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="page-title">หมวดหมู่</div>
+    </div>
+  </div>
+  <div class="card">
     <div class="cat-cols">
       <div>
-        <div class="cg-title">รายรับ</div>
+        <div class="cg-lbl">รายรับ</div>
         <div class="chips" id="chips-income"></div>
-        <div class="cat-add">
-          <input type="text" id="new-inc" placeholder="ชื่อหมวดใหม่...">
+        <div class="cat-add-row">
+          <input type="text" id="new-inc" placeholder="หมวดใหม่...">
           <button class="cat-add-btn" onclick="addCat('income')">+ เพิ่ม</button>
         </div>
       </div>
       <div>
-        <div class="cg-title">รายจ่าย</div>
+        <div class="cg-lbl">รายจ่าย</div>
         <div class="chips" id="chips-expense"></div>
-        <div class="cat-add">
-          <input type="text" id="new-exp" placeholder="ชื่อหมวดใหม่...">
+        <div class="cat-add-row">
+          <input type="text" id="new-exp" placeholder="หมวดใหม่...">
           <button class="cat-add-btn" onclick="addCat('expense')">+ เพิ่ม</button>
         </div>
       </div>
@@ -705,87 +606,109 @@ textarea{resize:vertical;min-height:56px}
   </div>
 </div>
 
-<!-- PAGE: SETTINGS ════════════════════════════════════════ -->
+<!-- ── SETTINGS ──────────────────────────────── -->
 <div class="page" id="page-settings">
-  <div class="sp">
-    <div class="sp-title">ปรับแต่งสี</div>
-    <div class="color-presets">
-      <button class="cp-btn" onclick="applyPreset('ocean')">Ocean</button>
-      <button class="cp-btn" onclick="applyPreset('sunset')">Sunset</button>
-      <button class="cp-btn" onclick="applyPreset('forest')">Forest</button>
-      <button class="cp-btn" onclick="applyPreset('candy')">Candy</button>
-      <button class="cp-btn" onclick="applyPreset('mono')">Mono</button>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="mob-menu-btn" onclick="openSb()"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="page-title">ตั้งค่า</div>
     </div>
-    <div class="color-row">
-      <label>สีหลัก (ฟ้า)</label>
-      <input type="color" id="c-ac1" value="#7ec8f7" oninput="applyColors()">
-    </div>
-    <div class="color-row">
-      <label>สีรอง (ชมพู)</label>
-      <input type="color" id="c-ac2" value="#f7a8d0" oninput="applyColors()">
-    </div>
-    <div class="color-row">
-      <label>สีเสริม (เหลือง)</label>
-      <input type="color" id="c-ac3" value="#ffe88a" oninput="applyColors()">
-    </div>
-    <button class="reset-color-btn" onclick="resetColors()">รีเซ็ตสี</button>
   </div>
-
-  <div class="sp">
-    <div class="sp-title">Google Sheets</div>
-    <div class="banner" id="cfg-banner2" style="margin-bottom:12px">
-      <div class="bdot"></div>
-      <span id="cfg-text2">ยังไม่เชื่อม</span>
-      <button class="b-setup" onclick="openSheets()">ตั้งค่า</button>
+  <div class="card">
+    <div class="card-title">ธีมสี</div>
+    <div class="preset-btns">
+      <button class="pb" onclick="applyPreset('default')">Default</button>
+      <button class="pb" onclick="applyPreset('ocean')">Ocean</button>
+      <button class="pb" onclick="applyPreset('sunset')">Sunset</button>
+      <button class="pb" onclick="applyPreset('forest')">Forest</button>
+      <button class="pb" onclick="applyPreset('violet')">Violet</button>
+      <button class="pb" onclick="applyPreset('mono')">Mono</button>
     </div>
-    <button class="submit-btn" style="background:var(--sur2);color:var(--txt);border:1px solid var(--brd);box-shadow:none" onclick="syncSheets()">
-      ซิงค์ข้อมูลจาก Sheets
-    </button>
+    <div class="color-row"><label>สีหลัก</label><input type="color" id="c1" value="#7ec8f7" oninput="applyColors()"></div>
+    <div class="color-row"><label>สีรอง</label><input type="color" id="c2" value="#f7a8d0" oninput="applyColors()"></div>
+    <div class="color-row"><label>สีเสริม</label><input type="color" id="c3" value="#ffe88a" oninput="applyColors()"></div>
   </div>
-
-  <div class="sp">
-    <div class="sp-title">ข้อมูล</div>
-    <button class="reset-color-btn" onclick="exportCSV()" style="margin-right:8px">Export CSV</button>
-    <button class="reset-color-btn" onclick="clearAll()" style="color:var(--ac2);border-color:var(--ac2)">ล้างข้อมูลทั้งหมด</button>
+  <div class="card" style="margin-top:12px">
+    <div class="card-title">Google Sheets</div>
+    <div style="font-size:.75rem;color:var(--txt2);margin-bottom:10px" id="sheets-status-txt">ยังไม่เชื่อมต่อ</div>
+    <button class="sec-btn" onclick="openSheetsModal()">ตั้งค่าการเชื่อมต่อ</button>
+    <button class="sec-btn" onclick="syncSheets()">ซิงค์ข้อมูล</button>
+    <button class="sec-btn" onclick="pushAllToSheets()">Push ทั้งหมดไป Sheets</button>
+  </div>
+  <div class="card" style="margin-top:12px">
+    <div class="card-title">ข้อมูล</div>
+    <button class="sec-btn" onclick="exportCSV()">Export CSV</button>
+    <button class="sec-btn danger" onclick="clearAll()">ล้างข้อมูลทั้งหมด</button>
   </div>
 </div>
 
-</main><!-- /main -->
+</div><!-- /content -->
+</main>
 
-<!-- MODAL: SHEETS ═══════════════════════════════════════ -->
+<!-- MODAL: PIN LOCK -->
+<div class="mov" id="pin-modal">
+  <div class="modal" style="max-width:300px;text-align:center">
+    <div style="font-size:1.3rem;margin-bottom:4px">🔒</div>
+    <div class="modal-title" style="text-align:center">ใส่รหัสผ่าน</div>
+    <div class="modal-sub" style="text-align:center">กรอกรหัสเพื่อเข้าถึง Google Sheets</div>
+    <div style="position:relative;margin-bottom:4px">
+      <input type="password" id="pin-input" placeholder="••••••••••"
+        style="text-align:center;letter-spacing:4px;font-size:1.1rem;padding:10px"
+        onkeydown="if(event.key==='Enter')checkPin()">
+    </div>
+    <div id="pin-err" style="font-size:.7rem;color:var(--ac2);min-height:16px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:6px">
+      <button class="sv-btn" style="flex:1;padding:9px" onclick="checkPin()">ยืนยัน</button>
+      <button class="cl-btn" style="margin:0;flex:1" onclick="closeModal('pin-modal');document.getElementById('pin-input').value='';document.getElementById('pin-err').textContent=''">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SHEETS -->
 <div class="mov" id="sheets-modal">
   <div class="modal">
-    <h2>เชื่อมต่อ Google Sheets</h2>
-    <p class="msub">ทำ 4 ขั้นตอนนี้ใช้เวลาประมาณ 5 นาที</p>
-    <div class="step"><strong>ขั้น 1:</strong> เปิด Google Sheets ใหม่ → <strong>Extensions → Apps Script</strong></div>
-    <div class="step"><strong>ขั้น 2:</strong> วางโค้ดด้านล่าง แล้วกด Save:
-<code>function doPost(e){
-  const s=SpreadsheetApp.getActiveSpreadsheet()
-    .getSheetByName("Sheet1")||SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  const d=JSON.parse(e.postData.contents);
-  if(d.action==="add"){
-    s.appendRow([d.id,d.date,d.type,d.category,d.desc,d.amount,d.note,d.slip||'']);
+    <div class="modal-title">เชื่อมต่อ Google Sheets</div>
+    <div class="modal-sub">ทำ 4 ขั้นตอน ใช้เวลา ~5 นาที</div>
+    <div class="step"><strong>ขั้น 1:</strong> เปิด Google Sheets → <strong>Extensions → Apps Script</strong></div>
+    <div class="step"><strong>ขั้น 2:</strong> ลบโค้ดเก่า วางโค้ดใหม่ด้านล่าง → กด Save:
+<code>function doPost(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var s = ss.getSheetByName("Sheet1") || ss.getActiveSheet();
+  var d = JSON.parse(e.postData.contents);
+  if (d.action === "add") {
+    s.appendRow([d.id,d.date,d.type,d.category,
+      d.desc,d.amount,d.note,d.slip||"",d.recurring||false,d.freq||""]);
   }
-  if(d.action==="delete"){
-    const r=s.getDataRange().getValues();
-    for(let i=1;i<r.length;i++){if(r[i][0]==d.id){s.deleteRow(i+1);break;}}
+  if (d.action === "delete") {
+    var r = s.getDataRange().getValues();
+    for (var i = 1; i < r.length; i++) {
+      if (String(r[i][0]) === String(d.id)) { s.deleteRow(i+1); break; }
+    }
   }
-  return ContentService.createTextOutput(JSON.stringify({ok:true}))
+  return ContentService
+    .createTextOutput(JSON.stringify({ok:true}))
     .setMimeType(ContentService.MimeType.JSON);
 }
-function doGet(){
-  const s=SpreadsheetApp.getActiveSpreadsheet()
-    .getSheetByName("Sheet1")||SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  const r=s.getDataRange().getValues();
-  return ContentService.createTextOutput(
-    JSON.stringify(r.slice(1).map(x=>({
-      id:x[0],date:x[1],type:x[2],category:x[3],
-      desc:x[4],amount:x[5],note:x[6],slip:x[7]||''
-    })))
-  ).setMimeType(ContentService.MimeType.JSON);
+function doGet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var s = ss.getSheetByName("Sheet1") || ss.getActiveSheet();
+  var r = s.getDataRange().getValues();
+  var out = [];
+  for (var i = 1; i < r.length; i++) {
+    out.push({
+      id:r[i][0], date:String(r[i][1]).slice(0,10),
+      type:r[i][2], category:r[i][3],
+      desc:r[i][4], amount:Number(r[i][5]),
+      note:r[i][6]||"", slip:r[i][7]||"",
+      recurring:r[i][8]||false, freq:r[i][9]||""
+    });
+  }
+  return ContentService
+    .createTextOutput(JSON.stringify(out))
+    .setMimeType(ContentService.MimeType.JSON);
 }</code></div>
-    <div class="step"><strong>ขั้น 3:</strong> <strong>Deploy → New Deployment</strong> → Type: Web app → Execute as: Me → Access: Anyone → Deploy → Copy URL</div>
-    <div class="step"><strong>ขั้น 4:</strong> วาง URL แล้วกด บันทึก</div>
+    <div class="step"><strong>ขั้น 3:</strong> <strong>Deploy → New Deployment</strong> → Type: Web app → Execute as: Me → Who has access: <strong>Anyone</strong> → Deploy → อนุญาต → Copy URL</div>
+    <div class="step"><strong>ขั้น 4:</strong> วาง URL ด้านล่าง แล้วกด บันทึก</div>
     <div class="url-row">
       <input type="url" id="sheets-url-in" placeholder="https://script.google.com/macros/s/...">
       <button class="sv-btn" onclick="saveUrl()">บันทึก</button>
@@ -794,97 +717,89 @@ function doGet(){
   </div>
 </div>
 
-<!-- MODAL: GOAL ══════════════════════════════════════════ -->
+<!-- MODAL: GOAL -->
 <div class="mov" id="goal-modal">
-  <div class="modal" style="max-width:340px">
-    <h2>งบประมาณเดือนนี้</h2>
-    <p class="msub">ตั้งยอดรายจ่ายสูงสุดต่อเดือน</p>
-    <div class="fg">
-      <label>งบประมาณ (฿/เดือน)</label>
-      <input type="number" id="goal-in" placeholder="เช่น 15000">
-    </div>
-    <div class="url-row" style="margin-top:12px">
-      <button class="sv-btn" style="flex:1" onclick="saveGoal()">บันทึก</button>
+  <div class="modal" style="max-width:320px">
+    <div class="modal-title">งบประมาณรายเดือน</div>
+    <div class="modal-sub">ตั้งยอดรายจ่ายสูงสุดต่อเดือน</div>
+    <div class="fg" style="margin-bottom:12px"><label>งบประมาณ (฿/เดือน)</label><input type="number" id="goal-in" placeholder="เช่น 15000"></div>
+    <div style="display:flex;gap:6px">
+      <button class="sv-btn" style="flex:1;padding:9px" onclick="saveGoal()">บันทึก</button>
       <button class="cl-btn" style="margin:0;flex:1" onclick="closeModal('goal-modal')">ยกเลิก</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: SLIP PREVIEW ══════════════════════════════════ -->
-<div class="mov" id="slip-modal">
-  <div class="modal" style="max-width:420px">
-    <h2>รูปสลิป</h2>
-    <div class="slip-preview" style="margin-top:12px"><img id="slip-modal-img" src="" alt="slip"></div>
-    <button class="cl-btn" style="margin-top:12px" onclick="closeModal('slip-modal')">ปิด</button>
+<!-- MODAL: SLIP PREVIEW -->
+<div class="mov" id="slip-preview-modal">
+  <div class="modal" style="max-width:400px;text-align:center">
+    <div class="modal-title" style="margin-bottom:12px">รูปสลิป</div>
+    <img id="slip-prev-img" src="" style="max-width:100%;border-radius:8px">
+    <button class="cl-btn" onclick="closeModal('slip-preview-modal')">ปิด</button>
   </div>
 </div>
 
 <div id="toast"></div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-/* ════ STATE ════════════════════════════════════════════ */
-const DEF_CATS={
+/* ── STATE ──────────────────────────────── */
+const DCATS={
   income:['เงินเดือน','ธุรกิจ','ลงทุน','โบนัส','ฟรีแลนซ์','ของขวัญ','อื่นๆ'],
   expense:['อาหาร','เดินทาง','ที่พัก','สาธารณูปโภค','สุขภาพ','บันเทิง','การศึกษา','ช้อปปิ้ง','ประกัน','อื่นๆ']
 };
-const PAL=['#7ec8f7','#f7a8d0','#ffe88a','#a8f0d8','#c5b4f7','#f7c88a','#a8d8f7','#f0c5e8','#b4f7d4','#f7e0a8','#aad4f5','#f5aac5'];
+const PAL=['#7ec8f7','#f7a8d0','#ffe88a','#4ecb8d','#c5b4f7','#f7c87a','#a8d8f7','#f0b8d8','#b4f0d4','#f0e0a0','#90c8f0','#f090b8'];
 const PRESETS={
-  ocean:  ['#5bc4f5','#80d8c8','#ffe066'],
-  sunset: ['#f5a55b','#f5705b','#fff0a0'],
-  forest: ['#5bd68a','#a0d85b','#f5e85b'],
-  candy:  ['#f07aeb','#7ab0f0','#f5e07a'],
-  mono:   ['#aabbd4','#8899bb','#d4ccaa'],
+  default:['#7ec8f7','#f7a8d0','#ffe88a'],
+  ocean:['#5bc8f5','#80d8c8','#ffe066'],
+  sunset:['#f5a55b','#f56060','#fff080'],
+  forest:['#5bd68a','#a0d85b','#f5e85b'],
+  violet:['#b06ef5','#f07aeb','#7af0d8'],
+  mono:['#aabbd4','#8899bb','#d4d0c0'],
 };
+let txs=JSON.parse(localStorage.getItem('sb_txs')||'[]');
+let cats=JSON.parse(localStorage.getItem('sb_cats')||JSON.stringify(DCATS));
+let recs=JSON.parse(localStorage.getItem('sb_recs')||'[]');
+let sheetsUrl=localStorage.getItem('sb_url')||'';
+let goalAmt=parseFloat(localStorage.getItem('sb_goal')||'0');
+let curType='income';
+let slipOn=false;
+let slipB64='';
+let period='month';
+let pDate=new Date();
+let ch={};
 
-let txs      = JSON.parse(localStorage.getItem('sb_txs')||'[]');
-let cats     = JSON.parse(localStorage.getItem('sb_cats')||JSON.stringify(DEF_CATS));
-let sheetsUrl= localStorage.getItem('sb_url')||'';
-let goalAmt  = parseFloat(localStorage.getItem('sb_goal')||'0');
-let curType  = 'income';
-let slipOn   = false;
-let slipB64  = '';
-let period   = 'month';
-let periodDate = new Date();
-let ch       = {};
-
-/* ════ INIT ════════════════════════════════════════════ */
+/* ── INIT ─────────────────────────────── */
 window.onload=()=>{
   document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
-  loadColors();
-  updateCatSel();
-  updateBanners();
-  updatePeriodLabel();
-  renderAll();
-  renderCatChips();
+  loadColors();updateCatSel();updateSbStatus();renderAll();renderCatChips();renderRecList();
   initSF();
   if(sheetsUrl)syncSheets();
-  // theme init
-  const dark=document.documentElement.getAttribute('data-theme')==='dark';
-  document.getElementById('theme-ic').textContent=dark?'☀':'🌙';
-  document.getElementById('theme-lbl').textContent=dark?'โหมดสว่าง':'โหมดมืด';
+  updatePLabel();
+  document.getElementById('f-rec').addEventListener('change',e=>{
+    document.getElementById('rec-freq-wrap').style.display=e.target.checked?'block':'none';
+  });
 };
 
-/* ════ STARFIELD ════════════════════════════════════════ */
+/* ── STARFIELD ─────────────────────────── */
 function initSF(){
   const c=document.getElementById('sf'),ctx=c.getContext('2d');
   let W,H,stars=[];
   function resize(){W=c.width=innerWidth;H=c.height=innerHeight;mk()}
   function mk(){
     stars=[];
-    const n=Math.floor(W*H/5000);
-    for(let i=0;i<n;i++) stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+.2,a:Math.random(),da:(Math.random()-.5)*.006,speed:Math.random()*.12+.04,c:['#7ec8f7','#f7a8d0','#ffe88a','#fff'][Math.floor(Math.random()*4)]});
-    for(let i=0;i<3;i++) stars.push(mkS());
+    const n=Math.floor(W*H/6000);
+    for(let i=0;i<n;i++)stars.push({x:Math.random()*W,y:Math.random()*H,r:.3+Math.random()*1.2,a:Math.random(),da:(Math.random()-.5)*.005,spd:.04+Math.random()*.1,c:['#7ec8f7','#f7a8d0','#ffe88a','#fff'][Math.floor(Math.random()*4)]});
+    for(let i=0;i<2;i++)stars.push(mkSh());
   }
-  function mkS(){return{sh:true,x:Math.random()*W,y:Math.random()*H*.4,vx:3+Math.random()*3,vy:1.5+Math.random()*1.5,life:1,ml:80+Math.random()*80}}
+  function mkSh(){return{sh:true,x:Math.random()*W,y:Math.random()*H*.4,vx:2.5+Math.random()*3,vy:1+Math.random()*1.5,life:1,ml:60+Math.random()*60}}
   function draw(){
     ctx.clearRect(0,0,W,H);
     stars.forEach(s=>{
-      if(s.sh){s.x+=s.vx;s.y+=s.vy;s.life--;if(s.life<=0||s.x>W||s.y>H){Object.assign(s,mkS());return}
-        const a=s.life/s.ml,g=ctx.createLinearGradient(s.x,s.y,s.x-s.vx*7,s.y-s.vy*7);
-        g.addColorStop(0,'rgba(255,255,200,'+a+')');g.addColorStop(1,'rgba(255,255,200,0)');
-        ctx.strokeStyle=g;ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.x-s.vx*7,s.y-s.vy*7);ctx.stroke();return;}
-      s.a+=s.da;if(s.a<=0||s.a>=1)s.da*=-1;s.y+=s.speed;if(s.y>H)s.y=-2;
+      if(s.sh){s.x+=s.vx;s.y+=s.vy;s.life--;if(s.life<=0||s.x>W||s.y>H){Object.assign(s,mkSh());return}
+        const a=s.life/s.ml,g=ctx.createLinearGradient(s.x,s.y,s.x-s.vx*6,s.y-s.vy*6);
+        g.addColorStop(0,'rgba(255,255,210,'+a+')');g.addColorStop(1,'rgba(255,255,210,0)');
+        ctx.strokeStyle=g;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.x-s.vx*6,s.y-s.vy*6);ctx.stroke();return;}
+      s.a+=s.da;if(s.a<=0||s.a>=1)s.da*=-1;s.y+=s.spd;if(s.y>H)s.y=-2;
       ctx.globalAlpha=Math.max(0,Math.min(1,s.a));ctx.fillStyle=s.c;
       ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
     });
@@ -893,37 +808,56 @@ function initSF(){
   window.addEventListener('resize',resize);resize();draw();
 }
 
-/* ════ SIDEBAR ══════════════════════════════════════════ */
-function openSb(){document.getElementById('sb').classList.add('open');document.getElementById('sb-overlay').classList.add('show')}
-function closeSb(){document.getElementById('sb').classList.remove('open');document.getElementById('sb-overlay').classList.remove('show')}
+/* ── SIDEBAR ──────────────────────────── */
+function openSb(){document.getElementById('sb').classList.add('open');document.getElementById('sbo').classList.add('show')}
+function closeSb(){document.getElementById('sb').classList.remove('open');document.getElementById('sbo').classList.remove('show')}
 
-/* ════ THEME ════════════════════════════════════════════ */
+/* ── PAGES ────────────────────────────── */
+const TITLES={dashboard:'Dashboard',list:'รายการ',add:'บันทึกรายการ',cats:'หมวดหมู่',settings:'ตั้งค่า'};
+function go(p,btn){
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.sb-btn').forEach(e=>e.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  if(btn)btn.classList.add('active');
+  else{const b=document.getElementById('sbi-'+p);if(b)b.classList.add('active');}
+  closeSb();
+  if(p==='dashboard')renderAll();
+  if(p==='list'){buildMoFilter();renderList();}
+  if(p==='cats')renderCatChips();
+  if(p==='add')renderRecList();
+}
+
+/* ── THEME ────────────────────────────── */
 function toggleTheme(){
   const el=document.documentElement;
   const dark=el.getAttribute('data-theme')==='dark';
   el.setAttribute('data-theme',dark?'light':'dark');
-  document.getElementById('theme-ic').textContent=dark?'🌙':'☀';
-  document.getElementById('theme-lbl').textContent=dark?'โหมดมืด':'โหมดสว่าง';
+  document.getElementById('theme-lbl').textContent=dark?'Dark mode':'Light mode';
+  // update theme icon path for sun vs moon
+  const ic=document.getElementById('theme-ic');
+  ic.innerHTML=dark
+    ? '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>'
+    : '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
   setTimeout(()=>renderCharts(),80);
 }
 
-/* ════ COLORS ══════════════════════════════════════════ */
+/* ── COLORS ───────────────────────────── */
 function loadColors(){
-  const c1=localStorage.getItem('c_ac1')||'#7ec8f7';
-  const c2=localStorage.getItem('c_ac2')||'#f7a8d0';
-  const c3=localStorage.getItem('c_ac3')||'#ffe88a';
+  const c1=localStorage.getItem('c1')||'#7ec8f7';
+  const c2=localStorage.getItem('c2')||'#f7a8d0';
+  const c3=localStorage.getItem('c3')||'#ffe88a';
   setColors(c1,c2,c3);
-  document.getElementById('c-ac1').value=c1;
-  document.getElementById('c-ac2').value=c2;
-  document.getElementById('c-ac3').value=c3;
+  document.getElementById('c1').value=c1;
+  document.getElementById('c2').value=c2;
+  document.getElementById('c3').value=c3;
 }
 function applyColors(){
-  const c1=document.getElementById('c-ac1').value;
-  const c2=document.getElementById('c-ac2').value;
-  const c3=document.getElementById('c-ac3').value;
+  const c1=document.getElementById('c1').value;
+  const c2=document.getElementById('c2').value;
+  const c3=document.getElementById('c3').value;
   setColors(c1,c2,c3);
-  localStorage.setItem('c_ac1',c1);localStorage.setItem('c_ac2',c2);localStorage.setItem('c_ac3',c3);
-  setTimeout(()=>renderCharts(),80);
+  localStorage.setItem('c1',c1);localStorage.setItem('c2',c2);localStorage.setItem('c3',c3);
+  setTimeout(()=>renderCharts(),60);
 }
 function setColors(c1,c2,c3){
   const r=document.documentElement.style;
@@ -932,66 +866,45 @@ function setColors(c1,c2,c3){
 function applyPreset(name){
   const [c1,c2,c3]=PRESETS[name];
   setColors(c1,c2,c3);
-  document.getElementById('c-ac1').value=c1;
-  document.getElementById('c-ac2').value=c2;
-  document.getElementById('c-ac3').value=c3;
-  localStorage.setItem('c_ac1',c1);localStorage.setItem('c_ac2',c2);localStorage.setItem('c_ac3',c3);
-  setTimeout(()=>renderCharts(),80);
-}
-function resetColors(){
-  applyPreset('ocean');
-  document.getElementById('c-ac1').value='#7ec8f7';
-  document.getElementById('c-ac2').value='#f7a8d0';
-  document.getElementById('c-ac3').value='#ffe88a';
+  document.getElementById('c1').value=c1;
+  document.getElementById('c2').value=c2;
+  document.getElementById('c3').value=c3;
+  localStorage.setItem('c1',c1);localStorage.setItem('c2',c2);localStorage.setItem('c3',c3);
+  setTimeout(()=>renderCharts(),60);
 }
 
-/* ════ PAGES ════════════════════════════════════════════ */
-const PAGE_TITLES={'summary':'สรุปผล','add':'บันทึกรายการ','list':'ดูรายการ','cats':'หมวดหมู่','settings':'ตั้งค่า'};
-function goPage(p,btn){
-  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
-  document.querySelectorAll('.sb-item').forEach(e=>e.classList.remove('active'));
-  document.getElementById('page-'+p).classList.add('active');
-  document.getElementById('tb-title').textContent=PAGE_TITLES[p]||p;
-  if(btn)btn.classList.add('active');
-  else{const b=document.getElementById('sbi-'+p);if(b)b.classList.add('active');}
-  closeSb();
-  if(p==='summary')renderAll();
-  if(p==='list'){buildMonthF();renderList();}
-  if(p==='cats')renderCatChips();
-}
-
-/* ════ PERIOD ═══════════════════════════════════════════ */
+/* ── PERIOD ───────────────────────────── */
 function setPeriod(p,btn){
   period=p;
   document.querySelectorAll('.pt').forEach(e=>e.classList.remove('active'));
   if(btn)btn.classList.add('active');
-  updatePeriodLabel();renderSummary();renderBreakdowns();
+  updatePLabel();renderSummary();renderBreakdowns();renderTop5();
 }
-function shiftPeriod(d){
-  if(period==='day')periodDate=new Date(periodDate.getFullYear(),periodDate.getMonth(),periodDate.getDate()+d);
-  else if(period==='month')periodDate=new Date(periodDate.getFullYear(),periodDate.getMonth()+d,1);
-  else if(period==='year')periodDate=new Date(periodDate.getFullYear()+d,0,1);
-  updatePeriodLabel();renderSummary();renderBreakdowns();
+function shiftP(d){
+  if(period==='day')pDate=new Date(pDate.getFullYear(),pDate.getMonth(),pDate.getDate()+d);
+  else if(period==='month')pDate=new Date(pDate.getFullYear(),pDate.getMonth()+d,1);
+  else if(period==='year')pDate=new Date(pDate.getFullYear()+d,0,1);
+  updatePLabel();renderSummary();renderBreakdowns();renderTop5();
 }
-function updatePeriodLabel(){
-  const el=document.getElementById('period-label');
-  if(period==='day') el.textContent=periodDate.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'});
-  else if(period==='month') el.textContent=periodDate.toLocaleDateString('th-TH',{month:'long',year:'numeric'});
-  else if(period==='year') el.textContent='ปี '+(periodDate.getFullYear()+543);
+function updatePLabel(){
+  const el=document.getElementById('plbl');
+  if(period==='day')el.textContent=pDate.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'});
+  else if(period==='month')el.textContent=pDate.toLocaleDateString('th-TH',{month:'short',year:'numeric'});
+  else if(period==='year')el.textContent='ปี '+(pDate.getFullYear()+543);
   else el.textContent='ทั้งหมด';
 }
-function filterByPeriod(arr){
+function filterP(arr){
   if(period==='all')return arr;
   return arr.filter(t=>{
     const td=new Date(t.date);
-    if(period==='day') return td.toDateString()===periodDate.toDateString();
-    if(period==='month') return td.getMonth()===periodDate.getMonth()&&td.getFullYear()===periodDate.getFullYear();
-    if(period==='year') return td.getFullYear()===periodDate.getFullYear();
+    if(period==='day')return td.toDateString()===pDate.toDateString();
+    if(period==='month')return td.getMonth()===pDate.getMonth()&&td.getFullYear()===pDate.getFullYear();
+    if(period==='year')return td.getFullYear()===pDate.getFullYear();
     return true;
   });
 }
 
-/* ════ TYPE ═════════════════════════════════════════════ */
+/* ── TYPE ─────────────────────────────── */
 function setType(t){
   curType=t;
   document.getElementById('btn-inc').classList.toggle('active',t==='income');
@@ -999,189 +912,197 @@ function setType(t){
   updateCatSel();
 }
 function updateCatSel(){
-  document.getElementById('f-category').innerHTML=cats[curType].map(c=>`<option>${c}</option>`).join('');
+  document.getElementById('f-cat').innerHTML=cats[curType].map(c=>`<option>${c}</option>`).join('');
 }
 
-/* ════ SLIP ═════════════════════════════════════════════ */
+/* ── SLIP ─────────────────────────────── */
 function toggleSlip(){
   slipOn=!slipOn;
   document.getElementById('slip-sw').classList.toggle('on',slipOn);
-  document.getElementById('slip-area-wrap').style.display=slipOn?'block':'none';
-  if(!slipOn){slipB64='';resetSlipPreview();}
+  document.getElementById('slip-wrap').style.display=slipOn?'block':'none';
+  if(!slipOn){slipB64='';resetSlipUI();}
 }
-function resetSlipPreview(){
-  document.getElementById('slip-preview-wrap').innerHTML='<div class="slip-lbl">คลิกหรือลากรูปสลิปมาวางที่นี่<br><span>รองรับ JPG, PNG</span></div>';
-  document.getElementById('slip-drop').classList.remove('has-img');
+function resetSlipUI(){
+  document.getElementById('slip-inner').innerHTML='<div class="slip-hint">คลิกหรือลากรูปสลิปมาวางที่นี่<br><span>JPG, PNG (max 2MB)</span></div>';
+  document.getElementById('slip-zone').classList.remove('filled');
 }
 function handleSlip(e){
   const f=e.target.files[0];if(!f)return;
   if(f.size>2*1024*1024){showToast('รูปใหญ่เกินไป (max 2MB)','er');return;}
-  const reader=new FileReader();
-  reader.onload=ev=>{
+  const r=new FileReader();
+  r.onload=ev=>{
     slipB64=ev.target.result;
-    document.getElementById('slip-preview-wrap').innerHTML=`<img src="${slipB64}" style="max-width:100%;max-height:160px;border-radius:8px;object-fit:contain">`;
-    document.getElementById('slip-drop').classList.add('has-img');
+    document.getElementById('slip-inner').innerHTML=`<img src="${slipB64}" alt="slip">`;
+    document.getElementById('slip-zone').classList.add('filled');
   };
-  reader.readAsDataURL(f);
+  r.readAsDataURL(f);
 }
-// drag drop
 window.addEventListener('dragover',e=>e.preventDefault());
 window.addEventListener('drop',e=>{
-  e.preventDefault();
-  if(!slipOn)return;
+  e.preventDefault();if(!slipOn)return;
   const f=e.dataTransfer.files[0];
-  if(f&&f.type.startsWith('image/')){
-    const dt=new DataTransfer();dt.items.add(f);
-    document.getElementById('slip-file').files=dt.files;
-    handleSlip({target:{files:[f]}});
-  }
+  if(f&&f.type.startsWith('image/')){const dt=new DataTransfer();dt.items.add(f);document.getElementById('slip-file').files=dt.files;handleSlip({target:{files:[f]}});}
 });
 
-/* ════ ADD TX ═══════════════════════════════════════════ */
+/* ── ADD TX ───────────────────────────── */
 async function addTx(){
-  const amount=parseFloat(document.getElementById('f-amount').value);
+  const amount=parseFloat(document.getElementById('f-amt').value);
   const date=document.getElementById('f-date').value;
-  const category=document.getElementById('f-category').value;
-  const desc=document.getElementById('f-desc').value.trim()||category;
+  const cat=document.getElementById('f-cat').value;
+  const desc=document.getElementById('f-desc').value.trim()||cat;
   const note=document.getElementById('f-note').value.trim();
+  const isRec=document.getElementById('f-rec').checked;
+  const freq=document.getElementById('f-freq').value;
   if(!amount||amount<=0){showToast('ใส่จำนวนเงินด้วย','er');return}
   if(!date){showToast('เลือกวันที่ด้วย','er');return}
-  const tx={id:Date.now(),date,type:curType,category,desc,amount,note,slip:slipB64};
-  txs.unshift(tx);saveTxs();renderAll();
-  document.getElementById('f-amount').value='';
-  document.getElementById('f-desc').value='';
-  document.getElementById('f-note').value='';
-  if(slipOn){slipB64='';resetSlipPreview();}
+  const tx={id:Date.now(),date,type:curType,category:cat,desc,amount,note,slip:slipB64,recurring:isRec,freq:isRec?freq:''};
+  txs.unshift(tx);saveTxs();
+  if(isRec){recs.push({id:tx.id,type:curType,category:cat,desc,amount,note,freq});localStorage.setItem('sb_recs',JSON.stringify(recs));}
+  renderAll();renderRecList();
+  // reset
+  document.getElementById('f-amt').value='';document.getElementById('f-desc').value='';document.getElementById('f-note').value='';
+  document.getElementById('f-rec').checked=false;document.getElementById('rec-freq-wrap').style.display='none';
+  if(slipOn){slipB64='';resetSlipUI();}
   showToast('บันทึกแล้ว','ok');
-  if(sheetsUrl)await pushSheets(tx);
+  if(sheetsUrl)await pushTx(tx);
 }
 function saveTxs(){localStorage.setItem('sb_txs',JSON.stringify(txs))}
 
-/* ════ DELETE ═══════════════════════════════════════════ */
+/* ── DELETE ───────────────────────────── */
 async function delTx(id){
   txs=txs.filter(t=>t.id!=id);saveTxs();renderAll();renderList();
   showToast('ลบแล้ว','in');
-  if(sheetsUrl)fetch(sheetsUrl,{method:'POST',body:JSON.stringify({action:'delete',id})}).catch(()=>{});
+  if(sheetsUrl)fetch(sheetsUrl,{method:'POST',body:JSON.stringify({action:'delete',id:String(id)})}).catch(()=>{});
+}
+function delRec(id){
+  recs=recs.filter(r=>r.id!=id);localStorage.setItem('sb_recs',JSON.stringify(recs));renderRecList();showToast('ลบรายการประจำแล้ว','in');
 }
 
-/* ════ RENDER ═══════════════════════════════════════════ */
-function renderAll(){renderSummary();renderCharts();renderBreakdowns();renderGoal()}
+/* ── RENDER ALL ───────────────────────── */
+function renderAll(){renderSummary();renderCharts();renderBreakdowns();renderTop5();renderGoal()}
 
+/* ── SUMMARY ──────────────────────────── */
 function renderSummary(){
-  const fp=filterByPeriod(txs);
+  const fp=filterP(txs);
   const inc=fp.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0);
   const exp=fp.filter(t=>t.type==='expense').reduce((a,t)=>a+t.amount,0);
   const net=inc-exp;
   document.getElementById('s-net').textContent=(net>=0?'+':'')+fmt(net);
   document.getElementById('s-inc').textContent=fmt(inc);
   document.getElementById('s-exp').textContent=fmt(exp);
-  document.getElementById('s-inc-sub').textContent=fp.filter(t=>t.type==='income').length+' รายการ';
-  document.getElementById('s-exp-sub').textContent=fp.filter(t=>t.type==='expense').length+' รายการ';
-  document.getElementById('s-net-sub').textContent=net>=0?'บวก — ดีมาก':'ติดลบ — ระวังด้วยนะ';
+  document.getElementById('s-inc-s').textContent=fp.filter(t=>t.type==='income').length+' รายการ';
+  document.getElementById('s-exp-s').textContent=fp.filter(t=>t.type==='expense').length+' รายการ';
+  document.getElementById('s-net-sub').textContent=net>=0?'ยอดบวก':'ยอดติดลบ';
 }
 
-/* ════ GOAL ═════════════════════════════════════════════ */
+/* ── GOAL ─────────────────────────────── */
 function renderGoal(){
   const now=new Date();const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   const exp=txs.filter(t=>t.type==='expense'&&t.date.startsWith(ym)).reduce((a,t)=>a+t.amount,0);
-  const bar=document.getElementById('goal-bar');
-  if(!goalAmt){document.getElementById('goal-left').textContent='ยังไม่ได้ตั้งงบ';document.getElementById('goal-pct').textContent='—';bar.style.width='0%';bar.className='goal-bar-fill';return;}
+  const fill=document.getElementById('gfill');
+  if(!goalAmt){document.getElementById('goal-meta').textContent='ยังไม่ได้ตั้งงบ';fill.style.width='0%';fill.className='goal-fill';return;}
   const pct=Math.min(exp/goalAmt*100,100);
-  bar.style.width=pct+'%';bar.className='goal-bar-fill'+(pct>=100?' over':pct>=80?' warn':'');
+  fill.style.width=pct+'%';fill.className='goal-fill'+(pct>=100?' over':pct>=80?' warn':'');
   const left=goalAmt-exp;
-  document.getElementById('goal-left').textContent=left>=0?`เหลืออีก ${fmt(left)}`:`เกิน ${fmt(-left)}`;
-  document.getElementById('goal-pct').textContent=`${pct.toFixed(0)}% จาก ${fmt(goalAmt)}`;
+  document.getElementById('goal-meta').textContent=left>=0?`เหลือ ${fmt(left)} (${pct.toFixed(0)}%)`:`เกิน ${fmt(-left)}`;
+  // alert
+  if(pct>=80&&pct<100)showToast('ใกล้เกินงบแล้ว!','er');
 }
 
-/* ════ CHARTS ═══════════════════════════════════════════ */
+/* ── CHARTS ───────────────────────────── */
 function renderCharts(){renderBar();renderDonut();renderLine()}
-
 function cDef(){
-  const dark=document.documentElement.getAttribute('data-theme')==='dark';
-  return{tc:dark?'#6878aa':'#5868a0',gc:dark?'rgba(255,255,255,.05)':'rgba(0,0,0,.05)'};
+  const dk=document.documentElement.getAttribute('data-theme')==='dark';
+  return{tc:dk?'#5a6690':'#6070a0',gc:dk?'rgba(255,255,255,.04)':'rgba(0,0,0,.05)'};
 }
+function getAC(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
 
 function renderBar(){
   const mo={};
   txs.forEach(t=>{const m=t.date.slice(0,7);if(!mo[m])mo[m]={income:0,expense:0};mo[m][t.type]+=t.amount;});
   const lbs=Object.keys(mo).sort().slice(-6);
-  const {tc,gc}=cDef();
+  const {tc,gc}=cDef();const c1=getAC('--ac1');const c2=getAC('--ac2');
   if(ch.bar)ch.bar.destroy();
-  const c1=getComputedStyle(document.documentElement).getPropertyValue('--ac1').trim();
-  const c2=getComputedStyle(document.documentElement).getPropertyValue('--ac2').trim();
   ch.bar=new Chart(document.getElementById('barChart').getContext('2d'),{
     type:'bar',
     data:{
       labels:lbs.map(m=>new Date(m+'-01').toLocaleDateString('th-TH',{month:'short',year:'2-digit'})),
       datasets:[
-        {label:'รายรับ',data:lbs.map(m=>mo[m].income),backgroundColor:c1+'bb',borderRadius:5},
-        {label:'รายจ่าย',data:lbs.map(m=>mo[m].expense),backgroundColor:c2+'bb',borderRadius:5}
+        {label:'รายรับ',data:lbs.map(m=>mo[m].income),backgroundColor:c1+'99',borderRadius:4,borderSkipped:false},
+        {label:'รายจ่าย',data:lbs.map(m=>mo[m].expense),backgroundColor:c2+'99',borderRadius:4,borderSkipped:false}
       ]
     },
     options:{responsive:true,interaction:{mode:'index'},
-      plugins:{legend:{labels:{color:tc,font:{family:'Prompt',size:11}}}},
-      scales:{x:{ticks:{color:tc,font:{family:'Prompt',size:10}},grid:{color:gc}},
-        y:{ticks:{color:tc,font:{family:'Prompt',size:10},callback:v=>'฿'+v.toLocaleString()},grid:{color:gc}}}}
+      plugins:{legend:{labels:{color:tc,font:{family:'Prompt',size:10}}}},
+      scales:{x:{ticks:{color:tc,font:{family:'Prompt',size:9}},grid:{color:gc}},
+        y:{ticks:{color:tc,font:{family:'Prompt',size:9},callback:v=>'฿'+v.toLocaleString()},grid:{color:gc}}}}
   });
 }
-
 function renderDonut(){
-  const bc={};
-  txs.filter(t=>t.type==='expense').forEach(t=>{bc[t.category]=(bc[t.category]||0)+t.amount});
+  const bc={};txs.filter(t=>t.type==='expense').forEach(t=>{bc[t.category]=(bc[t.category]||0)+t.amount});
   const s=Object.entries(bc).sort((a,b)=>b[1]-a[1]).slice(0,8);
   const {tc}=cDef();
-  if(ch.donut)ch.donut.destroy();
-  ch.donut=new Chart(document.getElementById('donutChart').getContext('2d'),{
+  if(ch.dn)ch.dn.destroy();
+  ch.dn=new Chart(document.getElementById('donutChart').getContext('2d'),{
     type:'doughnut',
-    data:{labels:s.length?s.map(x=>x[0]):['ยังไม่มีข้อมูล'],datasets:[{data:s.length?s.map(x=>x[1]):[1],backgroundColor:PAL.slice(0,s.length||1),borderWidth:0,hoverOffset:6}]},
-    options:{responsive:true,cutout:'66%',plugins:{legend:{position:'right',labels:{color:tc,font:{family:'Prompt',size:10},boxWidth:9,padding:7}}}}
+    data:{labels:s.length?s.map(x=>x[0]):['ยังไม่มีข้อมูล'],datasets:[{data:s.length?s.map(x=>x[1]):[1],backgroundColor:PAL.slice(0,s.length||1),borderWidth:0,hoverOffset:5}]},
+    options:{responsive:true,cutout:'68%',plugins:{legend:{position:'right',labels:{color:tc,font:{family:'Prompt',size:9},boxWidth:8,padding:6}}}}
   });
 }
-
 function renderLine(){
   const s=[...txs].sort((a,b)=>a.date.localeCompare(b.date)).slice(-40);
   let cum=0;const pts=s.map(t=>{cum+=t.type==='income'?t.amount:-t.amount;return{x:t.date,y:cum}});
-  const {tc,gc}=cDef();
-  if(ch.line)ch.line.destroy();
-  if(!pts.length){ch.line=null;return}
-  const c1=getComputedStyle(document.documentElement).getPropertyValue('--ac1').trim();
-  ch.line=new Chart(document.getElementById('lineChart').getContext('2d'),{
+  const {tc,gc}=cDef();const c1=getAC('--ac1');
+  if(ch.ln)ch.ln.destroy();
+  if(!pts.length)return;
+  ch.ln=new Chart(document.getElementById('lineChart').getContext('2d'),{
     type:'line',
-    data:{labels:pts.map(p=>p.x),datasets:[{label:'ยอดสะสม',data:pts.map(p=>p.y),borderColor:c1,backgroundColor:c1+'22',borderWidth:2,pointRadius:2.5,fill:true,tension:.4}]},
-    options:{responsive:true,plugins:{legend:{labels:{color:tc,font:{family:'Prompt',size:11}}}},
-      scales:{x:{ticks:{color:tc,maxTicksLimit:6,font:{family:'Prompt',size:10}},grid:{color:gc}},
-        y:{ticks:{color:tc,callback:v=>'฿'+v.toLocaleString(),font:{family:'Prompt',size:10}},grid:{color:gc}}}}
+    data:{labels:pts.map(p=>p.x),datasets:[{label:'ยอดสะสม',data:pts.map(p=>p.y),borderColor:c1,backgroundColor:c1+'18',borderWidth:1.5,pointRadius:2,fill:true,tension:.4}]},
+    options:{responsive:true,plugins:{legend:{labels:{color:tc,font:{family:'Prompt',size:10}}}},
+      scales:{x:{ticks:{color:tc,maxTicksLimit:6,font:{family:'Prompt',size:9}},grid:{color:gc}},
+        y:{ticks:{color:tc,callback:v=>'฿'+v.toLocaleString(),font:{family:'Prompt',size:9}},grid:{color:gc}}}}
   });
 }
 
-/* ════ BREAKDOWNS ═══════════════════════════════════════ */
-function renderBreakdowns(){renderBD('expense','bd-exp','bd-exp-total');renderBD('income','bd-inc','bd-inc-total')}
-function renderBD(type,id,totId){
-  const fp=filterByPeriod(txs).filter(t=>t.type===type);
+/* ── BREAKDOWN ────────────────────────── */
+function renderBreakdowns(){renderBD('expense','bd-exp');renderBD('income','bd-inc')}
+function renderBD(type,id){
+  const fp=filterP(txs).filter(t=>t.type===type);
   const total=fp.reduce((a,t)=>a+t.amount,0);
-  document.getElementById(totId).textContent=total?fmt(total):'';
-  const bc={};
-  fp.forEach(t=>{if(!bc[t.category])bc[t.category]={s:0,n:0};bc[t.category].s+=t.amount;bc[t.category].n++});
+  const bc={};fp.forEach(t=>{if(!bc[t.category])bc[t.category]={s:0,n:0};bc[t.category].s+=t.amount;bc[t.category].n++});
   const s=Object.entries(bc).sort((a,b)=>b[1].s-a[1].s);
   const el=document.getElementById(id);
-  if(!s.length){el.innerHTML='<div style="color:var(--txt2);font-size:.8rem;padding:6px 0">ยังไม่มีข้อมูลในช่วงนี้</div>';return}
+  if(!s.length){el.innerHTML='<div style="font-size:.72rem;color:var(--txt2);padding:4px 0">ไม่มีข้อมูล</div>';return}
   el.innerHTML=s.map(([cat,{s:sm,n}],i)=>{
-    const pct=total?(sm/total*100).toFixed(0):0;
-    const col=PAL[i%PAL.length];
-    return `<div class="bd-row">
-      <div class="bd-dot" style="background:${col}"></div>
-      <div class="bd-name">${cat}</div>
-      <div class="bd-bar-w"><div class="bd-bar" style="width:${pct}%;background:${col}"></div></div>
-      <div class="bd-pct">${pct}%</div>
-      <div class="bd-cnt">${n} รายการ</div>
-      <div class="bd-amt" style="color:${col}">${fmt(sm)}</div>
-    </div>`;
+    const pct=total?(sm/total*100).toFixed(0):0;const col=PAL[i%PAL.length];
+    return `<div class="bd-row"><div class="bd-dot" style="background:${col}"></div><div class="bd-name">${cat}</div><div class="bd-bar-w"><div class="bd-bar" style="width:${pct}%;background:${col}"></div></div><div class="bd-pct">${pct}%</div><div class="bd-cnt">${n} รายการ</div><div class="bd-amt" style="color:${col}">${fmt(sm)}</div></div>`;
   }).join('');
 }
 
-/* ════ LIST ═════════════════════════════════════════════ */
-function buildMonthF(){
-  const sel=document.getElementById('fl-month');
+/* ── TOP5 ─────────────────────────────── */
+function renderTop5(){
+  const s=[...txs.filter(t=>t.type==='expense')].sort((a,b)=>b.amount-a.amount).slice(0,5);
+  const el=document.getElementById('top5');
+  if(!s.length){el.innerHTML='<div style="font-size:.72rem;color:var(--txt2);padding:4px 0">ยังไม่มีข้อมูล</div>';return}
+  el.innerHTML=s.map((t,i)=>`<div class="top5-row"><div class="top5-rank">${i+1}</div><div class="top5-info"><div class="top5-desc">${t.desc}${t.recurring?'<span class="rec-badge">REC</span>':''}</div><div class="top5-meta">${t.date} · ${t.category}</div></div><div class="top5-amt">${fmt(t.amount)}</div></div>`).join('');
+}
+
+/* ── RECURRING LIST ───────────────────── */
+function renderRecList(){
+  const el=document.getElementById('rec-list');
+  if(!recs.length){el.innerHTML='<div style="font-size:.72rem;color:var(--txt2)">ยังไม่มีรายการประจำ</div>';return}
+  const freqLabel={monthly:'ทุกเดือน',weekly:'ทุกสัปดาห์',yearly:'ทุกปี'};
+  el.innerHTML=recs.map(r=>`<div class="txi" style="margin-top:5px">
+    <div class="txi-bar ${r.type}"></div>
+    <div class="txi-info"><div class="txi-desc">${r.desc}<span class="rec-badge">${freqLabel[r.freq]||r.freq}</span></div><div class="txi-meta">${r.category}</div></div>
+    <div class="txi-amt ${r.type}">${r.type==='income'?'+':'-'}${fmt(r.amount)}</div>
+    <button class="txi-del" onclick="delRec(${r.id})" style="opacity:1">✕</button>
+  </div>`).join('');
+}
+
+/* ── LIST PAGE ────────────────────────── */
+function buildMoFilter(){
+  const sel=document.getElementById('fl-mo');
   const months=[...new Set(txs.map(t=>t.date.slice(0,7)))].sort().reverse();
   const cur=sel.value;
   sel.innerHTML='<option value="">ทุกเดือน</option>'+months.map(m=>{
@@ -1192,8 +1113,8 @@ function buildMonthF(){
 function renderList(){
   const tf=document.getElementById('fl-type').value;
   const cf=document.getElementById('fl-cat').value;
-  const mf=document.getElementById('fl-month').value;
-  const q=(document.getElementById('search-in').value||'').toLowerCase();
+  const mf=document.getElementById('fl-mo').value;
+  const q=(document.getElementById('s-in').value||'').toLowerCase();
   const fc=document.getElementById('fl-cat');
   const allC=[...new Set(txs.map(t=>t.category))].sort();
   const sv=fc.value;
@@ -1204,19 +1125,20 @@ function renderList(){
   if(mf)f=f.filter(t=>t.date.startsWith(mf));
   if(q)f=f.filter(t=>(t.desc+t.category+t.note).toLowerCase().includes(q));
   const list=document.getElementById('tx-list');
-  if(!f.length){list.innerHTML='<div class="empty-st"><div class="e-ic">○</div><p style="font-size:.85rem">ไม่พบรายการ</p></div>';return}
+  if(!f.length){list.innerHTML='<div class="empty-st"><div class="ei">○</div><p style="font-size:.78rem">ไม่พบรายการ</p></div>';return}
   list.innerHTML=f.map(t=>{
     const isI=t.type==='income';
     const d=new Date(t.date).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'});
-    const slipBtn=t.slip?`<div class="txi-slip" onclick="viewSlip('${t.id}')"><img src="${t.slip}" alt="slip"></div>`:'';
+    const slipEl=t.slip?`<div class="txi-slip-thumb" onclick="viewSlip('${t.id}')"><img src="${t.slip}" alt="slip"></div>`:'';
+    const recEl=t.recurring?'<span class="rec-badge">REC</span>':'';
     return `<div class="txi">
-      <div class="txi-dot ${t.type}"></div>
+      <div class="txi-bar ${t.type}"></div>
       <div class="txi-info">
-        <div class="txi-desc">${t.desc}</div>
+        <div class="txi-desc">${t.desc}${recEl}</div>
         <div class="txi-meta">${d}${t.note?' · '+t.note:''}</div>
       </div>
       <span class="txi-badge">${t.category}</span>
-      ${slipBtn}
+      ${slipEl}
       <span class="txi-amt ${t.type}">${isI?'+':'-'}${fmt(t.amount)}</span>
       <button class="txi-del" onclick="delTx(${t.id})">✕</button>
     </div>`;
@@ -1224,18 +1146,17 @@ function renderList(){
 }
 function viewSlip(id){
   const tx=txs.find(t=>t.id==id);if(!tx||!tx.slip)return;
-  document.getElementById('slip-modal-img').src=tx.slip;
-  document.getElementById('slip-modal').classList.add('open');
+  document.getElementById('slip-prev-img').src=tx.slip;
+  document.getElementById('slip-preview-modal').classList.add('open');
 }
 
-/* ════ CATS ═════════════════════════════════════════════ */
+/* ── CATEGORIES ───────────────────────── */
 function renderCatChips(){
   ['income','expense'].forEach(tp=>{
     document.getElementById('chips-'+tp).innerHTML=cats[tp].map(c=>
-      `<div class="chip">${c}<button class="cd" onclick="delCat('${tp}','${c}')">✕</button></div>`
+      `<div class="chip">${c}<button class="chip-del" onclick="delCat('${tp}','${c}')">✕</button></div>`
     ).join('');
-  });
-  updateCatSel();
+  });updateCatSel();
 }
 function addCat(tp){
   const inp=document.getElementById(tp==='income'?'new-inc':'new-exp');
@@ -1246,69 +1167,100 @@ function addCat(tp){
   inp.value='';renderCatChips();showToast('เพิ่มหมวดแล้ว','ok');
 }
 function delCat(tp,n){
-  cats[tp]=cats[tp].filter(c=>c!==n);
-  localStorage.setItem('sb_cats',JSON.stringify(cats));
+  cats[tp]=cats[tp].filter(c=>c!==n);localStorage.setItem('sb_cats',JSON.stringify(cats));
   renderCatChips();showToast('ลบหมวดแล้ว','in');
 }
 
-/* ════ EXPORT ═══════════════════════════════════════════ */
+/* ── EXPORT ───────────────────────────── */
 function exportCSV(){
-  const rows=[['ID','วันที่','ประเภท','หมวดหมู่','รายละเอียด','จำนวน','หมายเหตุ']];
-  txs.forEach(t=>rows.push([t.id,t.date,t.type==='income'?'รายรับ':'รายจ่าย',t.category,t.desc,t.amount,t.note]));
+  const rows=[['ID','วันที่','ประเภท','หมวดหมู่','รายละเอียด','จำนวน','หมายเหตุ','Recurring','Freq']];
+  txs.forEach(t=>rows.push([t.id,t.date,t.type==='income'?'รายรับ':'รายจ่าย',t.category,t.desc,t.amount,t.note,t.recurring?'ใช่':'ไม่',t.freq||'']));
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
   a.download=`budget_${new Date().toISOString().slice(0,10)}.csv`;a.click();
   showToast('Export CSV แล้ว','ok');
 }
-function clearAll(){
-  if(!confirm('ล้างข้อมูลทั้งหมด?'))return;
-  txs=[];saveTxs();renderAll();renderList();showToast('ล้างข้อมูลแล้ว','in');
-}
+function clearAll(){if(!confirm('ล้างข้อมูลทั้งหมด?'))return;txs=[];recs=[];saveTxs();localStorage.setItem('sb_recs','[]');renderAll();renderList();showToast('ล้างข้อมูลแล้ว','in')}
 
-/* ════ GOAL MODAL ═══════════════════════════════════════ */
+/* ── GOAL MODAL ───────────────────────── */
 function openGoalModal(){document.getElementById('goal-in').value=goalAmt||'';document.getElementById('goal-modal').classList.add('open')}
 function saveGoal(){goalAmt=parseFloat(document.getElementById('goal-in').value)||0;localStorage.setItem('sb_goal',goalAmt);closeModal('goal-modal');renderGoal();showToast('บันทึกงบแล้ว','ok')}
 
-/* ════ SHEETS ═══════════════════════════════════════════ */
-function updateBanners(){
-  ['cfg-banner','cfg-banner2'].forEach(id=>{
-    const b=document.getElementById(id);if(!b)return;
-    b.classList.toggle('ok',!!sheetsUrl);
-  });
-  document.getElementById('cfg-text').textContent=sheetsUrl?'เชื่อมต่อ Google Sheets แล้ว':'ยังไม่เชื่อม Google Sheets';
-  const t2=document.getElementById('cfg-text2');if(t2)t2.textContent=sheetsUrl?'เชื่อมต่อแล้ว':'ยังไม่เชื่อม';
+/* ── SHEETS ───────────────────────────── */
+function updateSbStatus(){
+  const dot=document.getElementById('sb-dot');
+  const txt=document.getElementById('sb-status-txt');
+  const stxt=document.getElementById('sheets-status-txt');
+  if(sheetsUrl){dot.classList.add('ok');txt.textContent='Sheets connected';if(stxt)stxt.textContent='เชื่อมต่อแล้ว: '+sheetsUrl.slice(0,40)+'...';}
+  else{dot.classList.remove('ok');txt.textContent='Local only';if(stxt)stxt.textContent='ยังไม่เชื่อมต่อ';}
 }
-function openSheets(){
-  if(sheetsUrl)document.getElementById('sheets-url-in').value=sheetsUrl;
-  document.getElementById('sheets-modal').classList.add('open');
+function openSheetsModal(){
+  // show PIN lock first
+  document.getElementById('pin-input').value='';
+  document.getElementById('pin-err').textContent='';
+  document.getElementById('pin-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('pin-input').focus(),120);
+}
+function checkPin(){
+  const val=document.getElementById('pin-input').value.trim();
+  if(val==='1212312121'){
+    closeModal('pin-modal');
+    document.getElementById('pin-input').value='';
+    document.getElementById('pin-err').textContent='';
+    if(sheetsUrl)document.getElementById('sheets-url-in').value=sheetsUrl;
+    document.getElementById('sheets-modal').classList.add('open');
+  } else {
+    const err=document.getElementById('pin-err');
+    err.textContent='รหัสไม่ถูกต้อง';
+    document.getElementById('pin-input').value='';
+    document.getElementById('pin-input').focus();
+    setTimeout(()=>err.textContent='',2000);
+  }
 }
 function saveUrl(){
   const url=document.getElementById('sheets-url-in').value.trim();
   if(!url.startsWith('https://script.google.com')){showToast('URL ไม่ถูกต้อง','er');return}
   sheetsUrl=url;localStorage.setItem('sb_url',url);
-  updateBanners();closeModal('sheets-modal');showToast('บันทึก URL แล้ว','in');syncSheets();
+  updateSbStatus();closeModal('sheets-modal');
+  showToast('บันทึก URL แล้ว กำลังซิงค์...','in');syncSheets();
 }
-async function pushSheets(tx){
-  try{await fetch(sheetsUrl,{method:'POST',body:JSON.stringify({action:'add',...tx})})}catch(e){}
+async function pushTx(tx){
+  try{await fetch(sheetsUrl,{method:'POST',body:JSON.stringify({action:'add',...tx,id:String(tx.id),slip:tx.slip||''})})}catch(e){console.warn('push failed',e)}
+}
+async function pushAllToSheets(){
+  if(!sheetsUrl){showToast('ยังไม่ได้ตั้งค่า Sheets','er');return}
+  showToast('กำลัง push ข้อมูลทั้งหมด...','in');
+  let ok=0;
+  for(const tx of txs){
+    try{await fetch(sheetsUrl,{method:'POST',body:JSON.stringify({action:'add',...tx,id:String(tx.id),slip:tx.slip||''})});ok++}catch(e){}
+  }
+  showToast(`Push ${ok}/${txs.length} รายการแล้ว`,'ok');
 }
 async function syncSheets(){
   if(!sheetsUrl){showToast('ยังไม่ได้ตั้งค่า Sheets','er');return}
   try{
-    const r=await fetch(sheetsUrl);const d=await r.json();
+    const r=await fetch(sheetsUrl+'?t='+Date.now());const d=await r.json();
     if(Array.isArray(d)&&d.length){
-      txs=d.map(x=>({id:x.id,date:String(x.date).slice(0,10),type:x.type,category:x.category,desc:x.desc,amount:parseFloat(x.amount)||0,note:x.note||'',slip:x.slip||''}));
-      saveTxs();renderAll();showToast('ซิงค์แล้ว','ok');
-    }else{showToast('ไม่มีข้อมูลใน Sheets','in')}
-  }catch(e){showToast('ซิงค์ไม่สำเร็จ','er')}
+      txs=d.map(x=>({
+        id:x.id,date:String(x.date).slice(0,10),type:x.type,category:x.category,
+        desc:x.desc,amount:parseFloat(x.amount)||0,note:x.note||'',slip:x.slip||'',
+        recurring:x.recurring||false,freq:x.freq||''
+      }));
+      saveTxs();renderAll();renderList();showToast('ซิงค์แล้ว '+txs.length+' รายการ','ok');
+    }else if(Array.isArray(d)){showToast('Sheets ว่างอยู่','in');}
+  }catch(e){showToast('ซิงค์ไม่สำเร็จ — ตรวจสอบ URL และ Permission','er')}
 }
 
-/* ════ MODALS / TOAST ════════════════════════════════════ */
+/* ── MODALS ───────────────────────────── */
 function closeModal(id){document.getElementById(id).classList.remove('open')}
+
+/* ── TOAST ────────────────────────────── */
 function showToast(msg,type='ok'){
   const t=document.getElementById('toast');t.textContent=msg;t.className='show '+type;
-  clearTimeout(t._t);t._t=setTimeout(()=>t.className='',2600);
+  clearTimeout(t._t);t._t=setTimeout(()=>t.className='',2800);
 }
-/* ════ HELPERS ══════════════════════════════════════════ */
+
+/* ── HELPERS ──────────────────────────── */
 function fmt(n){return'฿'+Math.abs(n).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})}
 </script>
 </body>
