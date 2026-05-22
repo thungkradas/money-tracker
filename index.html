@@ -367,22 +367,57 @@ textarea{resize:vertical;min-height:52px}
 .page{display:none}
 .page.active{display:block}
 /* ── RESPONSIVE ──────────────────────────── */
+/* ── MOB MENU BTN (ต้องอยู่ก่อน media query) ──── */
+.mob-menu-btn{
+  display:none;width:36px;height:36px;border-radius:var(--rs);
+  border:1px solid var(--brd);background:var(--sur);color:var(--txt);
+  cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;
+}
+.mob-menu-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+
+/* ── MOBILE FIXED TOPBAR ─────────────────────── */
+.mob-topbar{
+  display:none;
+  position:fixed;top:0;left:0;right:0;height:52px;z-index:150;
+  background:var(--card);border-bottom:1px solid var(--brd);
+  align-items:center;padding:0 14px;gap:10px;
+  backdrop-filter:blur(12px);
+}
+.mob-topbar-title{font-size:.9rem;font-weight:600;flex:1}
+
 @media(max-width:680px){
-  .sb{position:fixed;top:0;left:0;height:100vh;transform:translateX(-100%);transition:transform .28s;z-index:200}
+  /* sidebar becomes drawer */
+  .sb{
+    position:fixed;top:0;left:0;height:100vh;
+    transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+    z-index:300;width:240px;
+  }
   .sb.open{transform:translateX(0)}
-  .sb-overlay{display:none;position:fixed;inset:0;z-index:199;background:rgba(0,0,0,.4)}
+  /* overlay */
+  .sb-overlay{
+    display:none;position:fixed;inset:0;z-index:299;
+    background:rgba(0,0,0,.5);backdrop-filter:blur(2px);
+  }
   .sb-overlay.show{display:block}
-  .main{width:100vw}
+  /* main shifts down for fixed topbar */
+  .main{width:100vw;padding-top:52px}
   .content{padding:16px 14px 80px}
+  /* show mob topbar */
+  .mob-topbar{display:flex}
+  /* show hamburger everywhere */
+  .mob-menu-btn{display:flex !important}
+  /* hide desktop topbar title on mobile (keeps the page topbar but hamburger shows) */
   .stat-grid{grid-template-columns:1fr}
   .chart-row{grid-template-columns:1fr}
   .f-grid{grid-template-columns:1fr}
   .fg.full{grid-column:1}
   .cat-cols{grid-template-columns:1fr}
-  .mob-menu-btn{display:flex}
+  /* period bar wraps */
+  .topbar{flex-wrap:wrap;gap:8px}
+  .topbar-actions .period-bar{flex-wrap:wrap;gap:4px}
+  /* hide desktop page topbar on mobile since we have fixed one */
+  .page .topbar{display:none}
 }
-.mob-menu-btn{display:none;width:32px;height:32px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--sur);color:var(--txt2);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0}
-.mob-menu-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
 /* ── CALENDAR PICKER ─────────────────────── */
 .cal-wrap{position:relative}
 .cal-input{
@@ -395,9 +430,20 @@ textarea{resize:vertical;min-height:52px}
 .cal-input:hover{border-color:var(--ac1)}
 .cal-input.has-date{color:var(--txt)}
 .cal-popup{
-  position:absolute;top:calc(100% + 6px);left:0;z-index:500;
+  position:absolute;top:calc(100% + 6px);left:0;z-index:600;
   background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);
-  padding:14px;min-width:240px;box-shadow:var(--sh);
+  padding:14px;min-width:260px;box-shadow:0 8px 32px rgba(0,0,0,.4);
+  /* รองรับ overflow บนมือถือ */
+  touch-action:manipulation;
+}
+@media(max-width:400px){
+  .cal-popup{
+    position:fixed;
+    left:50%;top:50%;
+    transform:translate(-50%,-50%);
+    width:290px;
+    min-width:unset;
+  }
 }
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .cal-nav{
@@ -506,6 +552,22 @@ textarea{resize:vertical;min-height:52px}
 </aside>
 
 <!-- MAIN -->
+<!-- MOBILE FIXED TOPBAR -->
+<div class="mob-topbar" id="mob-topbar">
+  <button class="mob-menu-btn" onclick="openSb()">
+    <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <span class="mob-topbar-title" id="mob-topbar-title">รายรับ-รายจ่าย</span>
+  <div style="display:flex;gap:6px">
+    <div class="period-tabs" id="mob-period-tabs" style="padding:2px;gap:2px">
+      <button class="pt active" onclick="setPeriodMob('day',this)">วัน</button>
+      <button class="pt" onclick="setPeriodMob('month',this)">เดือน</button>
+      <button class="pt" onclick="setPeriodMob('year',this)">ปี</button>
+      <button class="pt" onclick="setPeriodMob('all',this)">ทั้งหมด</button>
+    </div>
+  </div>
+</div>
+
 <main class="main" id="main">
 <div class="content">
 
@@ -647,16 +709,16 @@ textarea{resize:vertical;min-height:52px}
       <div class="fg"><label>จำนวนเงิน (฿)</label><input type="number" id="f-amt" placeholder="0.00" min="0" step="0.01"></div>
       <div class="fg"><label>วันที่</label>
         <div class="cal-wrap" id="cal-wrap">
-          <div class="cal-input" id="cal-display" onclick="toggleCal()">
+          <div class="cal-input" id="cal-display" onclick="toggleCal(event)">
             <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--txt2);fill:none;stroke-width:1.8;stroke-linecap:round;flex-shrink:0"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             <span id="cal-display-txt">เลือกวันที่</span>
           </div>
           <input type="hidden" id="f-date">
           <div class="cal-popup" id="cal-popup" style="display:none">
             <div class="cal-header">
-              <button class="cal-nav" onclick="calShift(-1)">‹</button>
+              <button type="button" class="cal-nav" onclick="calShift(-1,event)">‹</button>
               <span class="cal-month-lbl" id="cal-month-lbl"></span>
-              <button class="cal-nav" onclick="calShift(1)">›</button>
+              <button type="button" class="cal-nav" onclick="calShift(1,event)">›</button>
             </div>
             <div class="cal-dow">
               <span>อา</span><span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span>ส</span>
@@ -1069,7 +1131,7 @@ function openSb(){document.getElementById('sb').classList.add('open');document.g
 function closeSb(){document.getElementById('sb').classList.remove('open');document.getElementById('sbo').classList.remove('show')}
 
 /* ── PAGES ────────────────────────────── */
-const TITLES={dashboard:'Dashboard',list:'รายการ',add:'บันทึกรายการ',cats:'หมวดหมู่',settings:'ตั้งค่า'};
+const TITLES={dashboard:'รายรับ-รายจ่าย',list:'รายการ',add:'บันทึกรายการ',cats:'หมวดหมู่',settings:'ตั้งค่า',profit:'คำนวณกำไร'};
 function go(p,btn){
   document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('.sb-btn').forEach(e=>e.classList.remove('active'));
@@ -1077,11 +1139,23 @@ function go(p,btn){
   if(btn)btn.classList.add('active');
   else{const b=document.getElementById('sbi-'+p);if(b)b.classList.add('active');}
   closeSb();
+  // sync mobile topbar
+  const mobTitle=document.getElementById('mob-topbar-title');
+  if(mobTitle)mobTitle.textContent=TITLES[p]||p;
+  const mobPeriod=document.getElementById('mob-period-tabs');
+  if(mobPeriod)mobPeriod.style.display=p==='dashboard'?'flex':'none';
   if(p==='dashboard')renderAll();
   if(p==='list'){buildMoFilter();renderList();}
   if(p==='cats')renderCatChips();
   if(p==='add')renderRecList();
   if(p==='profit')renderProfitTable();
+}
+function setPeriodMob(p,btn){
+  // sync both desktop and mobile period tabs
+  document.querySelectorAll('.pt').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll(`[onclick*="setPeriodMob('${p}']`).forEach(e=>e.classList.add('active'));
+  if(btn)btn.classList.add('active');
+  period=p;updatePLabel();renderSummary();renderBreakdowns();renderTop5();
 }
 
 /* ── THEME ────────────────────────────── */
@@ -1670,55 +1744,73 @@ function showToast(msg,type='ok'){
 /* ── CALENDAR PICKER ──────────────────────── */
 let calViewDate = new Date();
 let calSelected = new Date();
+let calOpen = false;
 
-function toggleCal(){
+function toggleCal(e){
+  if(e){e.stopPropagation();}
+  calOpen ? closeCal() : openCal();
+}
+function openCal(){
   const pop=document.getElementById('cal-popup');
-  const isOpen=pop.style.display==='block';
-  if(isOpen){pop.style.display='none';return;}
   pop.style.display='block';
+  calOpen=true;
   renderCal();
-  // close on outside click
-  setTimeout(()=>document.addEventListener('click',calOutsideClick,{once:true}),10);
+  // ใช้ setTimeout ให้ event นี้จบก่อนค่อย bind outside listener
+  setTimeout(()=>{
+    document.addEventListener('pointerdown',calOutside,{capture:true,once:true});
+  },50);
 }
-function calOutsideClick(e){
+function closeCal(){
+  const pop=document.getElementById('cal-popup');
+  if(pop)pop.style.display='none';
+  calOpen=false;
+}
+function calOutside(e){
   const wrap=document.getElementById('cal-wrap');
-  if(!wrap.contains(e.target)) document.getElementById('cal-popup').style.display='none';
-  else document.addEventListener('click',calOutsideClick,{once:true});
+  if(wrap&&wrap.contains(e.target)){
+    // ยังอยู่ใน wrap — bind ใหม่
+    setTimeout(()=>{
+      if(calOpen)document.addEventListener('pointerdown',calOutside,{capture:true,once:true});
+    },50);
+    return;
+  }
+  closeCal();
 }
-function calShift(d){
+function calShift(d,e){
+  if(e){e.stopPropagation();}
   calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()+d,1);
   renderCal();
 }
 function renderCal(){
-  const y=calViewDate.getFullYear(), m=calViewDate.getMonth();
-  const monthNames=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  const y=calViewDate.getFullYear(),m=calViewDate.getMonth();
+  const monthNames=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+    'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
   document.getElementById('cal-month-lbl').textContent=`${monthNames[m]} ${y+543}`;
-  const first=new Date(y,m,1).getDay(); // 0=Sun
+  const firstDay=new Date(y,m,1).getDay();
   const daysInMonth=new Date(y,m+1,0).getDate();
-  const today=new Date(); today.setHours(0,0,0,0);
-  const sel=calSelected; sel.setHours(0,0,0,0);
+  const today=new Date();today.setHours(0,0,0,0);
+  const sel=new Date(calSelected);sel.setHours(0,0,0,0);
   let html='';
-  // empty cells before first day
-  for(let i=0;i<first;i++) html+=`<div class="cal-day empty"></div>`;
-  for(let d=1;d<=daysInMonth;d++){
-    const dt=new Date(y,m,d);
+  for(let i=0;i<firstDay;i++) html+=`<div class="cal-day empty"></div>`;
+  for(let day=1;day<=daysInMonth;day++){
+    const dt=new Date(y,m,day);dt.setHours(0,0,0,0);
     const isToday=dt.getTime()===today.getTime();
     const isSel=dt.getTime()===sel.getTime();
-    html+=`<button class="cal-day${isToday?' today':''}${isSel?' selected':''}" onclick="calSelect(${y},${m},${d})">${d}</button>`;
+    html+=`<button type="button" class="cal-day${isToday?' today':''}${isSel?' selected':''}"
+      onpointerdown="calSelect(${y},${m},${day},event)">${day}</button>`;
   }
   document.getElementById('cal-days').innerHTML=html;
 }
-function calSelect(y,m,d){
-  calSelected=new Date(y,m,d);
-  calViewDate=new Date(y,m,1);
+function calSelect(y,m,day,e){
+  if(e){e.stopPropagation();}
+  calSelected=new Date(y,m,day);
   const pad=n=>String(n).padStart(2,'0');
-  const val=`${y}-${pad(m+1)}-${pad(d)}`;
+  const val=`${y}-${pad(m+1)}-${pad(day)}`;
   document.getElementById('f-date').value=val;
   const display=calSelected.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'});
-  const disp=document.getElementById('cal-display-txt');
-  disp.textContent=display;
+  document.getElementById('cal-display-txt').textContent=display;
   document.getElementById('cal-display').classList.add('has-date');
-  document.getElementById('cal-popup').style.display='none';
+  closeCal();
 }
 
 /* ── PROFIT CALCULATOR ──────────────────── */
